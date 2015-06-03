@@ -18,7 +18,10 @@ class server
         void simplefs_lseek(int fd,int whence,int len);
 
         void initDataInSharedMemory();
-    private:
+        
+        //private:
+        int findBlockNumber(double size);
+        FileSystem* fs;
         FileSystem* attachSegmentOfSharedMemory();
         void detachSegmentOfSharedMemory(FileSystem* shared_memory);
 };
