@@ -14,6 +14,10 @@ int main(int arc,char** argv)
     server.fs->blockBitmap[1] = 0xFF;
     int block = server.findBlockNumber(10001);
     printf("numer bloku: %d \n", block);
+
+    server.fs->inodeBitmap[0] = 0x3;
+    int inode = server.findInodeNumber();
+    printf("numer inoda: %d\n", inode);
     //printf("%c\n",server.fs->inodeBitmap[0]);
     return 0;
 }

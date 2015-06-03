@@ -21,6 +21,7 @@ class server
         
         //private:
         int findBlockNumber(double size);
+        int findInodeNumber();
         FileSystem* fs;
         FileSystem* attachSegmentOfSharedMemory();
         void detachSegmentOfSharedMemory(FileSystem* shared_memory);

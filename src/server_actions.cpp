@@ -35,3 +35,19 @@ int server::findBlockNumber(double size)
  	}
  	return -1;
  }
+
+ int server::findInodeNumber()
+ {
+ 	for(int i = 0; i < INODE_COUNT / 8; i++)
+ 	{
+ 		char check = fs->inodeBitmap[i];
+ 		for(int j = 0; j < 8; j++)
+ 		{
+ 			char bit = check & 1;
+ 			if(bit == 0)
+ 				return i * 8 + j;
+ 			check >>= 1;
+ 		}
+ 	}
+ 	return -1;
+ }
