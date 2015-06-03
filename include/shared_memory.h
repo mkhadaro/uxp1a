@@ -8,7 +8,7 @@
 #define KLUCZ_PAMIECI     998
 
 // Stale dotyczace systemu plikow
-#define INODE_COUNT 1024
+#define INODE_COUNT 256
 #define BLOCK_COUNT 1024
 #define BLOCK_SIZE 1024
 #define INODE_NAME_SIZE 16

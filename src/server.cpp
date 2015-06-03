@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include "../include/shared_memory.h"
+
 #include "../include/server.h"
 
 #include <iostream>
@@ -31,16 +31,14 @@ server::~server()
   shmctl(pamiec_id, IPC_RMID, NULL);
 }
 
-
-
-void server::initDataInSharedMemory()
+FileSystem* server::attachSegmentOfSharedMemory()
 {
     //pobieramy id pamieci wspoldzielonej
     int pamiec_id = shmget(KLUCZ_PAMIECI, sizeof(FileSystem), 0);
     if(pamiec_id == -1)
     {
-    printf("Blad przy alokacji pamieci\n");
-    return ;
+        printf("Blad przy uzyskaniu id pamieci\n");
+        return 0;
     }
 
     //podlaczamy sie do segmentu pamieci wspoldzielonej
@@ -50,10 +48,26 @@ void server::initDataInSharedMemory()
       //podlaczamy wspoldzielona pamiec do przestrzeni adresowej naszego procesu
     if(shared_memory == (void *) -1)
     {
-        printf("Brak dostepu do pamieci wspoldzielonej\n");
-        return ;
+        printf("Brak dostępu do pamięci współdzielonej\n");
+        return 0;
     }
+    return shared_memory;
+}
 
+void server::detachSegmentOfSharedMemory(FileSystem* shared_memory)
+{
+    //odlaczamy segment wspoldzelonej pamięci
+    if(shmdt(shared_memory) == -1)
+    {
+        printf("Nieudane odłączenie pamięci współdzielonej\n");
+        return;
+    }
+}
+
+void server::initDataInSharedMemory()
+{
+
+    FileSystem* shared_memory = attachSegmentOfSharedMemory();
     /**************************************************************************************************/
     //tu piszemy dane do naszej pamieci wspoldzielonej
 
@@ -102,14 +116,43 @@ void server::initDataInSharedMemory()
 	inode->pointers[0] = BLOCK_INDEX_OFFSET + 0;
 
     /**************************************************************************************************/
-    //odlaczamy wspoldzelona pamiec
-    if(shmdt(shared_memory) == -1)
-    {
-        printf("Nieudane odlaczenie pamieci wspoldzielonej\n");
-        return;
-    }
+    detachSegmentOfSharedMemory(shared_memory);
 
+     shared_memory = attachSegmentOfSharedMemory();
+
+     inode = &(shared_memory->inodes[7]);
+     printf("\nroot_name: %s\n", inode->name);
+
+     detachSegmentOfSharedMemory(shared_memory);
     //inicjowanie potoku fifo serwera
 }
 
 
+void server::simplefs_open(char* name,int mode)
+{
+
+}
+void server::simplefs_unlink(char* name)
+{
+
+}
+void server::simplefs_mkdir(char* name)
+{
+
+}
+void server::simplefs_create(char* name,int mode)
+{
+
+}
+void server::simplefs_read(int fd,char* buf,int len)
+{
+
+}
+void server::simplefs_write(int fd,char* buf,int len)
+{
+
+}
+void server::simplefs_lseek(int fd,int whence,int len)
+{
+
+}
