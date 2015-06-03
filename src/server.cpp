@@ -120,8 +120,8 @@ void server::initDataInSharedMemory()
 
      shared_memory = attachSegmentOfSharedMemory();
 
-     inode = &(shared_memory->inodes[7]);
-     printf("\nroot_name: %s\n", inode->name);
+     INode* inode1 = &(shared_memory->inodes[7]);
+     printf("\nroot_name: %s\n", inode1->name);
 
      detachSegmentOfSharedMemory(shared_memory);
     //inicjowanie potoku fifo serwera
