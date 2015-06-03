@@ -1,0 +1,16 @@
+# Compiled source #
+###################
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+*.cbp
+*.depend
+ 
+
+[Oo]bj/
+[Bb]in/
+[Dd]ebug*/
+[Rr]elease*/
