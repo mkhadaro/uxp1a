@@ -9,22 +9,21 @@ class server
         server();
         ~server();
 
-        void simplefs_open(char* name,int mode);
-        void simplefs_unlink(char* name);
-        void simplefs_mkdir(char* name);
-        void simplefs_create(char* name,int mode);
-        void simplefs_read(int fd,char* buf,int len);
-        void simplefs_write(int fd,char* buf,int len);
-        void simplefs_lseek(int fd,int whence,int len);
-
-        void initDataInSharedMemory();
+        int_l createFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE], int type, int r, int w, int x);
+        int deleteFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE]);
+        int_l writeToFile(int_l inodeNumber, int_l size);
         
         //private:
-        int findBlockNumber(double size);
-        int findInodeNumber();
         FileSystem* fs;
         FileSystem* attachSegmentOfSharedMemory();
         void detachSegmentOfSharedMemory(FileSystem* shared_memory);
+
+        void setNewInodeData(int_l inodeNumber, int type, int r, int w, int x);
+        int_l findFreeBlockNumber(int_l blocksNeeded);
+        void setBlockBit(int_l number, int_l amount, bool value);
+        bool canAddToFile(int_l startingBlock, int_l amount);
+        int_l findFreeInodeNumber();
+        void setInodeBit(int_l number, bool value);
 };
 
 #endif // SERVER_H

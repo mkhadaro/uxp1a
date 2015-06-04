@@ -9,18 +9,20 @@
 
 // Stale dotyczace systemu plikow
 #define INODE_COUNT 512
-#define BLOCK_COUNT 1024
-#define DATA_BLOCK_COUNT 1017
+#define BLOCK_COUNT 1031
+#define DATA_BLOCK_COUNT 1024
 #define BLOCK_SIZE 4096
-
-#define ROOT_INODE (INODE_COUNT + BLOCK_COUNT);
-#define POINTER_COUNT 8
-#define BLOCK_INDEX_OFFSET 32768
 
 // Typy inodeow
 #define TYPE_DIR 0
 #define TYPE_FILE 1
 #define TYPE_HELPER 2
+
+#define NAME_SIZE 24
+#define PATH_SIZE
+#define EMPTY_ADDRESS 0xFFFFFFFFFFFFFFFF
+
+#define int_l long long int
 
 typedef struct inode
 {
@@ -41,12 +43,5 @@ typedef struct
 	INode inodes[INODE_COUNT];
 	char dataBlocks[DATA_BLOCK_COUNT*BLOCK_SIZE];
 } FileSystem;
-
-typedef struct
-{
-	int fd;
-	short int inode;
-	int mode;
-} DescriptorTableEntry;
 
 #endif // SHARED_MEMORY_H
