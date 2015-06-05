@@ -1,10 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-
 #include "../include/server.h"
 
-#include <iostream>
 
 server::server()
 {
@@ -15,12 +15,20 @@ server::server()
         printf("Błąd przy alokacji pamieci współdzielonej\n");
         return ;
     }
+
     fs = attachSegmentOfSharedMemory();
+
+    for(int i =0; i< INODE_COUNT ; ++i)
+    {
+        fs->inodes[i].type = FREE_INODE;
+        fs->inodes[i].pointers = 0;
+    }
 
 }
 
 server::~server()
 {
+    detachSegmentOfSharedMemory(fs);
    //pobieramy id pamieci wspoldzielonej
   int pamiec_id = shmget(MEMORY_KEY, sizeof(FileSystem), 0);
   if(pamiec_id == -1)
@@ -64,3 +72,34 @@ void server::detachSegmentOfSharedMemory(FileSystem* shared_memory)
         return;
     }
 }
+
+
+
+void server::createInode(char* name,int type,int nrInode)
+{
+    INode inode;
+    strcpy(inode.name , name);
+    inode.type = type;
+    inode.r = 1;
+    inode.size = 0;
+    inode.w = 1;
+    inode.pointers = 0;
+    inode.mapsDirFile.clear();
+
+    fs->inodes[nrInode] = inode;
+}
+
+/** konwencja nazwy plikow/katalogow   /root/abs/katalog ***/
+void server::simplefs_mkdir(char* name)
+{
+    int id_inode_file = checkName(name,TYPE_DIR);
+
+    if(id_inode_file == -1)
+    {
+        printf("No such file of directory\n");
+        return;
+    }
+
+}
+
+

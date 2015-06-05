@@ -9,6 +9,7 @@
 *.cbp
 *.depend
  
+program
 
 [Oo]bj/
 [Bb]in/
