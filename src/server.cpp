@@ -1,10 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-
 #include "../include/server.h"
 
-#include <iostream>
 
 server::server()
 {
@@ -15,12 +15,20 @@ server::server()
         printf("Błąd przy alokacji pamieci współdzielonej\n");
         return ;
     }
+
     fs = attachSegmentOfSharedMemory();
+
+    for(int i =0; i< INODE_COUNT ; ++i)
+    {
+        fs->inodes[i].type = FREE_INODE;
+        fs->inodes[i].pointers = 0;
+    }
 
 }
 
 server::~server()
 {
+    detachSegmentOfSharedMemory(fs);
    //pobieramy id pamieci wspoldzielonej
   int pamiec_id = shmget(MEMORY_KEY, sizeof(FileSystem), 0);
   if(pamiec_id == -1)
@@ -65,67 +73,18 @@ void server::detachSegmentOfSharedMemory(FileSystem* shared_memory)
     }
 }
 
-void server::initDataInSharedMemory()
+void server::createInode(char* name,int type,int nrInode)
 {
+    INode inode;
+    strcpy(inode.name , name);
+    inode.type = type;
+    inode.r = 1;
+    inode.size = 0;
+    inode.w = 1;
+    inode.pointers = 0;
+    inode.mapsDirFile.clear();
 
-    FileSystem* shared_memory = attachSegmentOfSharedMemory();
-    /**************************************************************************************************/
-    //tu piszemy dane do naszej pamieci wspoldzielonej
-
-	// INode* root_inode = &(shared_memory->inodes[0]);
-
-	// root_inode->name[0] = 'r';
-	// root_inode->name[1] = 'o';
-	// root_inode->name[2] = 'o';
-	// root_inode->name[3] = 't';
-	// root_inode->name[4] = '\0';
-	// root_inode->type = TYPE_DIR;
-	// root_inode->pointers[0] = 1;
-	// root_inode->r = 1;
-	// root_inode->w = 1;
-
- //    printf("inode %s",root_inode->name);
-
-	// INode* inode = &(shared_memory->inodes[1]);
-	// inode->name[0] = 'a';
-	// inode->name[1] = 'b';
-	// inode->name[2] = 'c';
-	// inode->name[3] = '\0';
-	// inode->type = TYPE_DIR;
-	// inode->r = 1;
-	// inode->w = 1;
-	// inode->pointers[0] = 2;
-
-	// inode = &(shared_memory->inodes[2]);
-	// inode->name[0] = 'd';
-	// inode->name[1] = 'e';
-	// inode->name[2] = 'f';
-	// inode->name[3] = '\0';
-	// inode->type = TYPE_DIR;
-	// inode->r = 1;
-	// inode->w = 1;
-	// inode->pointers[2] = 7;
-
-	// inode = &(shared_memory->inodes[7]);
-	// inode->name[0] = 'g';
-	// inode->name[1] = 'h';
-	// inode->name[2] = 'i';
-	// inode->name[3] = '\0';
-	// inode->type = TYPE_FILE;
-	// inode->r = 1;
-	// inode->w = 1;
-	// inode->pointers[0] = BLOCK_INDEX_OFFSET + 0;
-
-    /**************************************************************************************************/
-    detachSegmentOfSharedMemory(shared_memory);
-
-     shared_memory = attachSegmentOfSharedMemory();
-
-     // INode* inode1 = &(shared_memory->inodes[7]);
-     // printf("\nroot_name: %s\n", inode1->name);
-
-     detachSegmentOfSharedMemory(shared_memory);
-    //inicjowanie potoku fifo serwera
+    fs->inodes[nrInode] = inode;
 }
 
 
@@ -137,10 +96,20 @@ void server::simplefs_unlink(char* name)
 {
 
 }
+
+/** konwencja nazwy plikow/katalogow   /root/abs/katalog ***/
 void server::simplefs_mkdir(char* name)
 {
+    int id_inode_file = checkName(name,TYPE_DIR);
+
+    if(id_inode_file == -1)
+    {
+        printf("No such file of directory\n");
+        return;
+    }
 
 }
+
 void server::simplefs_create(char* name,int mode)
 {
 
