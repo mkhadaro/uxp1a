@@ -38,16 +38,14 @@ class server
         FileSystem* fs;
         FileSystem* attachSegmentOfSharedMemory();
         void detachSegmentOfSharedMemory(FileSystem* shared_memory);
-        void createInode(char* name,int type,int nrInode);
 
         filesName & checkName(char* name,int INODE_TYPE,int type_of_operation);
 
         private:
-            //filesName & checkName(char* name,int INODE_TYPE,int type_of_operation);
-            int checkValueInMap(std::multimap<int,char*> maps,char* value);
-            int checkValueCount(std::multimap<int,char*> maps,char* value);
-            int returnSecondValueOfMaps(std::multimap<int,char*> maps,char* value,int anotherInode);
-            filesName & updateLinksMapAndCreateFile(filesName & fileStruct,int INODE_TYPE);
+
+            int checkValueInMap(int maps[],char* value,int TYP_INODE);
+            int checkValueCount(int maps[],char* value);
+            int updateLinksMapAndCreateFile(int & dirNode);
             int updateLinksMapAndDeleteFile(filesName & fileStruct);
 
 };

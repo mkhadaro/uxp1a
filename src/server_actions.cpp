@@ -10,36 +10,40 @@ using namespace std;
 
 int_l server::createFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE], int type, int r, int w, int x)
 {
-	//int_l inodeNumber = findFreeInodeNumber();
-	//if(inodeNumber == -1)
-		//return -1;
+    //zwraca struktura z nr Inode katalogu nadrzędnego oraz nazwa pliku do utworzenia po rozbiorze slowa wejsciowego
     filesName dirNodeAndFileName = checkName(name,TYPE_FILE,CREATE);
-
     if(dirNodeAndFileName.second == -1)
     {
+        printf("Błąd przy utworzeniu pliku\n");
         return -1;
     }
-    dirNodeAndFileName = updateLinksMapAndCreateFile(dirNodeAndFileName,TYPE_FILE);
+    if(dirNodeAndFileName.second == -2)
+        return -1;
+    //zwrócimy parę,zawierającą: nowy nrInode do utworzenia oraz nazwa pliku
+    int nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);
 
-	setNewInodeData(dirNodeAndFileName.second, type, r, w, x,dirNodeAndFileName.first);
+    if(nodeNumber == -1)
+    {
+        printf("Błąd przy utworzeniu pliku\n");
+        return -1;
+    }
+
+	setNewInodeData(nodeNumber, type, r, w, x,dirNodeAndFileName.first);
 	setInodeBit(dirNodeAndFileName.second, true);
-	// TODO
-	// wstawic do odpowiedniego katalogu nazwe i numer inoda
+
 	return dirNodeAndFileName.second;
 }
 
 void server::setNewInodeData(int_l inodeNumber, int type, int r, int w, int x, char* name)
 {
     strcpy(fs->inodes[inodeNumber].name , name);
-    //fs->inodes[inodeNumber].name = name;
 	fs->inodes[inodeNumber].type = type;
 	fs->inodes[inodeNumber].r = r;
 	fs->inodes[inodeNumber].w = w;
 	fs->inodes[inodeNumber].x = x;
-	fs->inodes[inodeNumber].pointers = 0;//??
+	//fs->inodes[inodeNumber].pointers = 0;//
 	fs->inodes[inodeNumber].size = 0;
 	fs->inodes[inodeNumber].address = EMPTY_ADDRESS;
-	fs->inodes[inodeNumber].mapsDirFile.clear();
 }
 
 int server::deleteFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE])
@@ -197,20 +201,6 @@ void server::setInodeBit(int_l number, bool value)
 		fs->inodeBitmap[byteNumber] &= ~(1 << bitNumber);
 }
 
-/*
- int server::findFreeIdInode()
- {
-    for(int i = 0; i < INODE_COUNT ; ++i)
- 	{
-        INode inode = fs->inodes[i];
-
- 		if(inode.type == FREE_INODE)
-            return i;
- 	}
- 	return -1;
- }
- */
-
 filesName & server::checkName(char* name,int INODE_TYPE,int type_of_operation)
 {
     if(name[0] !='/')
@@ -235,16 +225,17 @@ filesName & server::checkName(char* name,int INODE_TYPE,int type_of_operation)
     if(strlen(name) == 1)
     {
 
-        if(root_inode->type == FREE_INODE && type_of_operation == CREATE)
+        if(root_inode->type == -1 && type_of_operation == CREATE)
         {
-            //createInode("/",0,findFreeIdInode());
             int nodeNumebr = findFreeInodeNumber();
-            setNewInodeData(nodeNumebr,INODE_TYPE, 1, 1, 1,fileName);
+            char *file =(char*) malloc(strlen(fileName)+1);
+            memcpy(file, fileName, strlen(fileName));
+            strcpy(file,fileName);
+            setNewInodeData(nodeNumebr,INODE_TYPE, 1, 1, 1,file);
             setInodeBit(nodeNumebr, true);
-            printf("%d inode Number kuk\n",nodeNumebr);
 
         }
-        filesName k(fileName,-1);
+        filesName k("",-2);
         free(i);
         return k;
     }
@@ -257,7 +248,8 @@ filesName & server::checkName(char* name,int INODE_TYPE,int type_of_operation)
             if(i[l] =='/')
             {
                 INode* inode = &(fs->inodes[nrInode]);
-                nrInode = checkValueInMap(inode->mapsDirFile,fileName);
+
+                nrInode = checkValueInMap(inode->pointers,fileName,INODE_TYPE);
                 if(nrInode == -1)
                 {
                     free(i);
@@ -265,6 +257,7 @@ filesName & server::checkName(char* name,int INODE_TYPE,int type_of_operation)
                     return k;
                 }
                 inode = &(fs->inodes[nrInode]);
+
                 if(inode->type != TYPE_DIR)
                 {
                     free(i);
@@ -285,9 +278,7 @@ filesName & server::checkName(char* name,int INODE_TYPE,int type_of_operation)
             {
                 INode* inode = &(fs->inodes[nrInode]);
                 dirNode = nrInode;
-
-                int counterFiles = checkValueCount(inode->mapsDirFile,fileName);
-
+                int counterFiles = checkValueCount(inode->pointers,fileName) ;
                 if(counterFiles == 2)
                 {
                     if(type_of_operation == CREATE)
@@ -299,64 +290,69 @@ filesName & server::checkName(char* name,int INODE_TYPE,int type_of_operation)
                     return k;
                 }
 
-                nrInode = checkValueInMap(inode->mapsDirFile,fileName);
-                inode = &(fs->inodes[nrInode]);
-
                 if(counterFiles == 1)
                 {
+                    nrInode = checkValueInMap(inode->pointers,fileName,INODE_TYPE);
+                    inode = &(fs->inodes[nrInode]);
                     if((type_of_operation == CREATE && inode->type == INODE_TYPE) || (type_of_operation == DELETE && inode->type != INODE_TYPE))
                         dirNode = -1;
 
                     filesName k(fileName,dirNode);
                     free(i);
                     return k;
-                    }
                 }
+            }
     }
-
-    if(type_of_operation == DELETE)
-        dirNode = -1;
-    filesName k (fileName,dirNode);
+    if(type_of_operation == CREATE)
+    {
+        char *nameOfFile =(char*) malloc(strlen(fileName)+1);
+        nameOfFile[strlen(fileName)] = 0;
+        memcpy(nameOfFile, fileName, strlen(fileName));
+        filesName k (nameOfFile,dirNode);
+        free(i);
+        return  k;
+    }
+    filesName k (fileName,-1);
     free(i);
     return  k;
 
 }
 
-filesName & server::updateLinksMapAndCreateFile(filesName & fileStruct,int INODE_TYPE)
+int server::updateLinksMapAndCreateFile(int & dirNode)
 {
-    int dirNode = fileStruct.second;
-    INode* inode = &(fs->inodes[dirNode]);
-    inode->pointers += 1;
-
-    int nodeNumber = findFreeInodeNumber();//findFreeIdInode();
-
-    char *file =(char*) malloc(strlen(fileStruct.first)+1);
-	memcpy(file, fileStruct.first, strlen(fileStruct.first));
-	strcpy(file,fileStruct.first);
-
-    //int nodeNumber = findInodeNumber();//findFreeIdInode();
+    int nodeNumber = findFreeInodeNumber();
     if(nodeNumber == -1)
+        return -1;
+    INode* inode = &(fs->inodes[dirNode]);
+    for(int i =0; i < sizeof (inode->pointers)/sizeof(int); ++i)
     {
-        filesName response("",0);
-        return response;
+        if(inode->pointers[i] == 0 && i < 7)
+        {
+            inode->pointers[i] = nodeNumber;
+            break;
+        }
+        //if(i == 7)
+        //{
+            //to do
+            //wszystkie 7 dowiazan zostalo wykorzystane - dodac wskaznik na pomocniczy inode,ktory bedzie przechowywal nastepne 7+1 wskazan
+            // na dodatkowe pliki
+       // }
+
     }
-    //inode->mapsDirFile.insert(std::pair<int,char*>(nodeNumber,file));
-    inode->mapsDirFile.insert(std::pair<int,char*>(nodeNumber,file));
-
-    filesName fileName(file,nodeNumber);
-    //setNewInodeData(int_l inodeNumber, int type, int r, int w, int x,char* name);
-    //createInode(file,INODE_TYPE,nodeNumber);
-    //int_l inodeNumber = findFreeInodeNumber();
-
-    return fileName;
+    return nodeNumber;
 }
+
 
 //return nodeNumer deleted file
 int server::updateLinksMapAndDeleteFile(filesName & fileStruct)
 {
+/*
     int dirNode = fileStruct.second;
     INode* inode = &(fs->inodes[dirNode]);
-    inode->pointers -= 1;
+    for(int i =0; i < sizeof (inode->pointers); ++i)
+        if(inode->pointers[i] == fileStruct.first && i < 8)
+            inode->pointers[i] = 0;
+    //inode->pointers -= 1;
 
     int counter = checkValueCount(inode->mapsDirFile,fileStruct.first);
     int nodeNumber = checkValueInMap(inode->mapsDirFile,fileStruct.first);
@@ -367,43 +363,27 @@ int server::updateLinksMapAndDeleteFile(filesName & fileStruct)
     free(fileStruct.first);
 
     return nodeNumber;
+    */
 }
 
-int server::checkValueInMap(std::multimap<int,char*> maps,char* value)
+int server::checkValueInMap(int maps[],char* value,int TYP_INODE)
 {
-    std::map<int,char*>::iterator it;
-    for (it = maps.begin(); it != maps.end(); ++it )
+    for(int i = 0; i < sizeof(maps)/sizeof(int) ; ++i )
     {
-        if (strcmp((*it).second ,value) == 0)
-        {
-            return it->first;
-        }
+        if(strcmp(fs->inodes[maps[i]].name , value) == 0)
+           if(fs->inodes[maps[i]].type == TYP_INODE)
+                return maps[i];
     }
     return -1;
 }
 
-int server::checkValueCount(std::multimap<int,char*> maps,char* value)
+int server::checkValueCount(int maps[],char* value)
 {
-
-    std::map<int,char*>::iterator it = maps.begin();
     int counter = 0;
-    for (; it != maps.end(); ++it )
+    for(int i = 0; i < sizeof(maps)/sizeof(int)  ; ++i )
     {
-                if (strcmp((*it).second ,value) == 0)
-                ++counter;
+        if(strcmp(fs->inodes[maps[i]].name, value) == 0)
+             ++counter;
     }
-
     return counter;
-}
-
-int server::returnSecondValueOfMaps(std::multimap<int,char*> maps,char* value,int anotherInode)
-{
-
-    std::map<int,char*>::iterator it = maps.begin();
-    for (; it != maps.end(); ++it )
-    {
-                if (strcmp((*it).second ,value) == 0)
-                   if(anotherInode !=it->first)
-                        return it->first;
-    }
 }

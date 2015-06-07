@@ -6,7 +6,7 @@
 #include <iostream>
 #include <map>
  //klucz do odwolan do pamieci wspoldz.
-#define MEMORY_KEY     1072//998
+#define MEMORY_KEY     1041
 
 // Stale dotyczace systemu plikow
 #define INODE_COUNT 512
@@ -16,7 +16,6 @@
 
 #define INODE_NAME_SIZE 16
 
-#define FREE_INODE -1
 #define TYPE_DIR 0
 #define TYPE_FILE 1
 #define TYPE_HELPER 2
@@ -38,11 +37,10 @@ typedef struct inode
 	short int r;
 	short int w;
 	short int x;
-	int pointers;
 	double size;
 	double address;
-    /***mapuje nazwy dowiązane do niego pliki/katalogi na inode**/
-    std::multimap<int,char*> mapsDirFile;
+    /***zawiera podrzędne nr inod-ow plików oraz katalogów**/
+    int pointers[8];
 } INode;
 
 typedef struct

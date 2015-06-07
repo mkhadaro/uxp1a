@@ -20,8 +20,7 @@ server::server()
 
     for(int i =0; i< INODE_COUNT ; ++i)
     {
-        fs->inodes[i].type = FREE_INODE;
-        fs->inodes[i].pointers = 0;
+        fs->inodes[i].type = -1;
     }
 
 }
@@ -36,6 +35,15 @@ server::~server()
     printf("Błąd przy uzyskaniu segmentu pamięci współdzielonej\n");
     return ;
   }
+  //zwalnianie pamieci przydzielonej na nazwy
+  /*
+    for(int i =0; i< INODE_COUNT ; ++i)
+    {
+        if(fs->inodes[i].type != -1)
+            free(fs->inodes[i].name);
+    }
+   */
+
   //zwalnianie pamięci współdzielonej
   shmctl(pamiec_id, IPC_RMID, NULL);
 }
@@ -74,42 +82,34 @@ void server::detachSegmentOfSharedMemory(FileSystem* shared_memory)
 }
 
 
-
-void server::createInode(char* name,int type,int nrInode)
-{
-    INode inode;
-    strcpy(inode.name , name);
-    inode.type = type;
-    inode.r = 1;
-    inode.size = 0;
-    inode.w = 1;
-    inode.pointers = 0;
-    inode.mapsDirFile.clear();
-
-    fs->inodes[nrInode] = inode;
-}
-
 void server::simplefs_mkdir(char* name)
 {
-    filesName id_inode_file = checkName(name,TYPE_DIR,CREATE);
+        //zwraca struktura z nr Inode katalogu nadrzędnego oraz nazwa pliku do utworzenia po rozbiorze slowa wejsciowego
+    filesName dirNodeAndFileName = checkName(name,TYPE_DIR,CREATE);
 
-    int dirNode = id_inode_file.second;
-    if(dirNode == -1)
+    std::cout<< "nazwa "<<dirNodeAndFileName.first<<std::endl;
+
+    if(dirNodeAndFileName.second == -1)
     {
-        printf("No such file %s of directory\n",name);
+        printf("Błąd przy tworzeniu pliku %s\n");
+        return ;
+    }
+    if(dirNodeAndFileName.second == -2)
+    {
         return;
     }
-    std::cout<<"zawarosc listy gornej "<<fs->inodes[id_inode_file.second].pointers<<std::endl;
+    //zwrócimy parę,zawierającą: nowy nrInode do utworzenia oraz nazwa pliku
+    int nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);
 
-    id_inode_file = updateLinksMapAndCreateFile(id_inode_file,TYPE_DIR);
-    printf("%d inodeNumber \n",id_inode_file.second);
+    if(nodeNumber == -1)
+    {
+        printf("Błąd przy tworzeniu pliku \n");
+        return ;
+    }
+	setNewInodeData(nodeNumber, TYPE_DIR, 1, 1, 1,dirNodeAndFileName.first);
+	setInodeBit(nodeNumber, true);
 
-
-    std::cout<<"zawarosc listy "<<fs->inodes[id_inode_file.second].pointers<<std::endl;
-
-
-    setNewInodeData(id_inode_file.second,TYPE_DIR,1,1,1,id_inode_file.first);
-    setInodeBit(id_inode_file.second, true);
+	return;
 }
 
 
