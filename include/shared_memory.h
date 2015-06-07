@@ -6,7 +6,7 @@
 #include <iostream>
 #include <map>
  //klucz do odwolan do pamieci wspoldz.
-#define MEMORY_KEY     1045//998
+#define MEMORY_KEY     1072//998
 
 // Stale dotyczace systemu plikow
 #define INODE_COUNT 512
@@ -24,6 +24,10 @@
 #define NAME_SIZE 24
 #define PATH_SIZE
 #define EMPTY_ADDRESS 0xFFFFFFFFFFFFFFFF
+
+//stale dotyczace typow operacji
+#define DELETE 1
+#define CREATE 2
 
 #define int_l long long int
 

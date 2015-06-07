@@ -89,17 +89,27 @@ void server::createInode(char* name,int type,int nrInode)
     fs->inodes[nrInode] = inode;
 }
 
-/** konwencja nazwy plikow/katalogow   /root/abs/katalog ***/
 void server::simplefs_mkdir(char* name)
 {
-    int id_inode_file = checkName(name,TYPE_DIR);
+    filesName id_inode_file = checkName(name,TYPE_DIR,CREATE);
 
-    if(id_inode_file == -1)
+    int dirNode = id_inode_file.second;
+    if(dirNode == -1)
     {
-        printf("No such file of directory\n");
+        printf("No such file %s of directory\n",name);
         return;
     }
+    std::cout<<"zawarosc listy gornej "<<fs->inodes[id_inode_file.second].pointers<<std::endl;
 
+    id_inode_file = updateLinksMapAndCreateFile(id_inode_file,TYPE_DIR);
+    printf("%d inodeNumber \n",id_inode_file.second);
+
+
+    std::cout<<"zawarosc listy "<<fs->inodes[id_inode_file.second].pointers<<std::endl;
+
+
+    setNewInodeData(id_inode_file.second,TYPE_DIR,1,1,1,id_inode_file.first);
+    setInodeBit(id_inode_file.second, true);
 }
 
 
