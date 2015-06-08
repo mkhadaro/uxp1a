@@ -19,8 +19,10 @@ int_l server::createFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE], 
     }
     if(dirNodeAndFileName.second == -2)
         return -1;
-    //zwrócimy parę,zawierającą: nowy nrInode do utworzenia oraz nazwa pliku
-    int nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);
+    /**
+    @return nowy nrInode do utworzenia  pliku
+    */
+    int_l nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);
 
     if(nodeNumber == -1)
     {
@@ -29,19 +31,17 @@ int_l server::createFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE], 
     }
 
 	setNewInodeData(nodeNumber, type, r, w, x,dirNodeAndFileName.first);
-	setInodeBit(dirNodeAndFileName.second, true);
-
-	return dirNodeAndFileName.second;
+    setInodeBit(nodeNumber, true);
+	return nodeNumber;
 }
 
-void server::setNewInodeData(int_l inodeNumber, int type, int r, int w, int x, char* name)
+void server::setNewInodeData(int inodeNumber, int type, int r, int w, int x, char* name)
 {
     strcpy(fs->inodes[inodeNumber].name , name);
 	fs->inodes[inodeNumber].type = type;
 	fs->inodes[inodeNumber].r = r;
 	fs->inodes[inodeNumber].w = w;
 	fs->inodes[inodeNumber].x = x;
-	//fs->inodes[inodeNumber].pointers = 0;//
 	fs->inodes[inodeNumber].size = 0;
 	fs->inodes[inodeNumber].address = EMPTY_ADDRESS;
 }
@@ -190,7 +190,7 @@ int_l server::findFreeInodeNumber()
  	return -1;
 }
 
-void server::setInodeBit(int_l number, bool value)
+void server::setInodeBit(int number, bool value)
 {
 	int_l byteNumber = number / 8;
 	int_l bitNumber = number % 8;
@@ -201,7 +201,7 @@ void server::setInodeBit(int_l number, bool value)
 		fs->inodeBitmap[byteNumber] &= ~(1 << bitNumber);
 }
 
-filesName & server::checkName(char* name,int INODE_TYPE,int type_of_operation)
+filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
 {
     if(name[0] !='/')
     {
@@ -227,7 +227,7 @@ filesName & server::checkName(char* name,int INODE_TYPE,int type_of_operation)
 
         if(root_inode->type == -1 && type_of_operation == CREATE)
         {
-            int nodeNumebr = findFreeInodeNumber();
+            int_l nodeNumebr = findFreeInodeNumber();
             char *file =(char*) malloc(strlen(fileName)+1);
             memcpy(file, fileName, strlen(fileName));
             strcpy(file,fileName);
@@ -278,7 +278,8 @@ filesName & server::checkName(char* name,int INODE_TYPE,int type_of_operation)
             {
                 INode* inode = &(fs->inodes[nrInode]);
                 dirNode = nrInode;
-                int counterFiles = checkValueCount(inode->pointers,fileName) ;
+                int counterFiles = 0;
+                counterFiles = checkValueCount(inode->pointers,fileName,counterFiles) ;
                 if(counterFiles == 2)
                 {
                     if(type_of_operation == CREATE)
@@ -318,25 +319,36 @@ filesName & server::checkName(char* name,int INODE_TYPE,int type_of_operation)
 
 }
 
+/**
+@return nowy nrInode - do utworzenia katalogu
+*/
 int server::updateLinksMapAndCreateFile(int & dirNode)
 {
     int nodeNumber = findFreeInodeNumber();
     if(nodeNumber == -1)
         return -1;
     INode* inode = &(fs->inodes[dirNode]);
-    for(int i =0; i < sizeof (inode->pointers)/sizeof(int); ++i)
+    for(int i = 0; i < sizeof (inode->pointers)/sizeof(int); ++i)
     {
         if(inode->pointers[i] == 0 && i < 7)
         {
             inode->pointers[i] = nodeNumber;
             break;
         }
-        //if(i == 7)
-        //{
-            //to do
-            //wszystkie 7 dowiazan zostalo wykorzystane - dodac wskaznik na pomocniczy inode,ktory bedzie przechowywal nastepne 7+1 wskazan
-            // na dodatkowe pliki
-       // }
+        if(i == 7)
+        {
+            if(inode->pointers[i] == 0)//warunek czy istnieje przypisanie do tego nr inodu, 0 -nr inode roota
+            {
+                    inode->pointers[i] = nodeNumber;//dowiązuje pomocniczy inode do tablicy inode-ow danego katalogu
+                    //tworze pomocniczy inode,który będzie przechowywał dowiązania do kojenych nrInode,należących do katalogu
+                    setNewInodeData(nodeNumber, TYPE_HELPER, 1, 1, 1,"help");
+                    setInodeBit(nodeNumber, true);
+                    inode = &(fs->inodes[nodeNumber]);//pobieram inode helpera
+                    return updateLinksMapAndCreateFile(nodeNumber);
+            }
+            else
+                return updateLinksMapAndCreateFile(inode->pointers[i]);
+        }
 
     }
     return nodeNumber;
@@ -366,24 +378,30 @@ int server::updateLinksMapAndDeleteFile(filesName & fileStruct)
     */
 }
 
-int server::checkValueInMap(int maps[],char* value,int TYP_INODE)
+int server::checkValueInMap(int *maps,char* value,int TYP_INODE)
 {
-    for(int i = 0; i < sizeof(maps)/sizeof(int) ; ++i )
+    for(int i = 0; i < sizeof(maps)/sizeof(int) ; ++i)
     {
         if(strcmp(fs->inodes[maps[i]].name , value) == 0)
+        {
            if(fs->inodes[maps[i]].type == TYP_INODE)
                 return maps[i];
+        }
+        if(fs->inodes[maps[i]].type == TYPE_HELPER)
+            checkValueInMap(fs->inodes[maps[i]].pointers,value,TYP_INODE);
     }
     return -1;
 }
 
-int server::checkValueCount(int maps[],char* value)
+int & server::checkValueCount(int *maps,char* value,int & counter)
 {
-    int counter = 0;
-    for(int i = 0; i < sizeof(maps)/sizeof(int)  ; ++i )
+    //int counter = 0;
+    for(int i = 0; i < sizeof(maps)/sizeof(int) ; ++i)
     {
         if(strcmp(fs->inodes[maps[i]].name, value) == 0)
              ++counter;
+        if(fs->inodes[maps[i]].type == TYPE_HELPER)
+            checkValueCount(fs->inodes[maps[i]].pointers,value,counter);
     }
     return counter;
 }
