@@ -89,13 +89,13 @@ int main(int argc,char** argv)
 			client c;
 			char tmp[128];
 			strcpy(tmp, "ahoj");
-			c.sendRequest(0,tmp, 0, 0, 0);
+			// c.sendRequest(0,tmp, 0, 0, 0);
 		}
 		if(strcmp(argv[1], serverStr) == 0)
 		{
 			printf("server\n");
 			server s;
-			s.work();
+			// s.work();
 		}
 	}
 
