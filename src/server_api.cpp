@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "../include/server.h"
 
 int_l server::createFile(char *name , int type, int r, int w, int x)
@@ -29,7 +27,7 @@ int_l server::createFile(char *name , int type, int r, int w, int x)
 	return nodeNumber;
 }
 
-void server::simplefs_mkdir(char* name)
+int server::simplefs_mkdir(char* name)
 {
     //zwraca strukturę z nr Inode katalogu nadrzędnego oraz nazwa pliku do utworzenia po rozbiorze slowa wejsciowego
     filesName dirNodeAndFileName = checkName(name,TYPE_DIR,CREATE);
@@ -37,52 +35,46 @@ void server::simplefs_mkdir(char* name)
     if(dirNodeAndFileName.second == -1)
     {
         printf("Błąd przy tworzeniu katalogu\n");
-        return ;
+        return -1;
     }
     if(dirNodeAndFileName.second == -2)//stworzylismy katalog główny "/"
-        return;
+        return -1;
 
     // nr inode - do dalszego utworzenia nowego nr inode dla katalogu
     int_l nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);
     if(nodeNumber == -1)
     {
         printf("Błąd przy tworzeniu katalogu \n");
-        return ;
+        return -1;
     }
     setNewInodeData(nodeNumber, TYPE_DIR, 1, 1, 1,dirNodeAndFileName.first);
     setInodeBit(nodeNumber, true);
 
-    return;
+    return 0;
 }
 
+//funkcja usuwająca plik
 int server::simplefs_unlink(char* name)
 {
     filesName dirNodeAndFileName = checkName(name,TYPE_FILE,DELETE);
+    std::cout<<dirNodeAndFileName.first<<" "<<dirNodeAndFileName.second<<std::endl;
     if(dirNodeAndFileName.second == -1)
         return -1;
 
-}
-int server::deleteFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE])
-{
-    filesName dirNodeAndFileName = checkName(name,TYPE_FILE,CREATE);
+    INode* inode = &(fs->inodes[dirNodeAndFileName.second]);
 
-    if(dirNodeAndFileName.second == -1)
-        return -1;
-    updateLinksMapAndDeleteFile(dirNodeAndFileName);
-    // TODO
-    // wyszukanie numeru inoda
-    // usuniecie pliku z katalogu
-    int_l inodeNumber;
-    if(inodeNumber == -1)
-        return -1;
+    int inodeNumber = updateLinksMapAndDeletePointer(dirNodeAndFileName,TYPE_FILE);
+    std::cout<<inodeNumber<<std::endl;
+
+    free(dirNodeAndFileName.first);//zwalniam pamięć przydzieloną na nazwę po rozbiorze sciężki z nazwą
 
     int_l inodeAddress = fs->inodes[inodeNumber].address;
     int_l inodeSize = fs->inodes[inodeNumber].size;
     int_l blocksAssigned = inodeSize / BLOCK_SIZE;
-
     setBlockBit(inodeAddress, blocksAssigned, false);
     setInodeBit(inodeNumber, false);
     return 0;
+
 }
 
 int_l server::writeToFile(int_l inodeNumber, int_l size)

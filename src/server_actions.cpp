@@ -1,14 +1,10 @@
 #include "../include/server.h"
-#include <stdio.h>
-#include <iostream>
-#include <stdlib.h>
-#include <string.h>
 #include <map>
 #include <set>
 
 using namespace std;
 
-void server::setNewInodeData(int inodeNumber, int type, int r, int w, int x, char* name)
+void server::setNewInodeData(int inodeNumber, int type, int r, int w, int x, char *name)
 {
     strcpy(fs->inodes[inodeNumber].name , name);
 	fs->inodes[inodeNumber].type = type;
@@ -17,6 +13,7 @@ void server::setNewInodeData(int inodeNumber, int type, int r, int w, int x, cha
 	fs->inodes[inodeNumber].x = x;
 	fs->inodes[inodeNumber].size = 0;
 	fs->inodes[inodeNumber].address = EMPTY_ADDRESS;
+	//free(name);
 }
 
 int_l server::findFreeBlockNumber(int_l blocksNeeded)
@@ -127,22 +124,11 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
         filesName k("",-1);
         return k;
     }
-
-    char *i =(char*) malloc(strlen(name)+1);
-	i[strlen(name)] = 0;
-	memcpy(i, name, strlen(name));
-
     char fileName[16] = {0};
-    char dirName[16] = {0} ;
-
     fileName[ 0] = '/';
-    strcpy(i,name);
-
     INode* root_inode = &(fs->inodes[0]);
-
     if(strlen(name) == 1)
     {
-
         if(root_inode->type == -1 && type_of_operation == CREATE)
         {
             int_l nodeNumebr = findFreeInodeNumber();
@@ -154,30 +140,25 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
 
         }
         filesName k("",-2);
-        free(i);
         return k;
     }
-
     int j = 0;
     int nrInode = 0;
     int dirNode = 0;
     for(int l = 1; l!= strlen(name);++l)
     {
-            if(i[l] =='/')
+            if(name[l] =='/')
             {
                 INode* inode = &(fs->inodes[nrInode]);
                 nrInode = checkValueInMap(inode->pointers,fileName,TYPE_DIR);
                 if(nrInode == -1)
                 {
-                    free(i);
                     filesName k("",-1);
                     return k;
                 }
                 inode = &(fs->inodes[nrInode]);
-
                 if(inode->type != TYPE_DIR)
                 {
-                    free(i);
                     filesName k("",-1);
                     return k;
                 }
@@ -187,38 +168,32 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
                 j = 0;
                 continue;
             }
-
-            fileName[j] = i[l];
+            fileName[j] = name[l];
             ++j ;
-
             if(l + 1 == strlen(name))
             {
                 INode* inode = &(fs->inodes[nrInode]);
                 dirNode = nrInode;
-                int counterFiles = 0;
-                counterFiles = checkValueCount(inode->pointers,fileName,counterFiles) ;
-                if(counterFiles == 2)
+                nrInode = checkValueInMap(inode->pointers,fileName,INODE_TYPE);
+                //jesli nie znaleziony zostal taki nr-inode - >wychodzimy z petli,dla delete wysylamy blad a dla create - tworzymy inode
+                if(nrInode == -1)
+                        break;
+                inode = &(fs->inodes[nrInode]);
+                //jesli mamy operacje tworzenia oraz nie mamy o takim samym typie stworzonego obiektu - break;
+                if(type_of_operation == CREATE && inode->type != INODE_TYPE)
+                    break;
+                //jesli mamy operacje usuwania oraz mamy inode o podanym wyzej typie - zwracamy inode dira oraz nazwe pliku do usuniecia;
+                if(type_of_operation == DELETE && inode->type == INODE_TYPE)
                 {
-                    if(type_of_operation == CREATE)
-                    {
-                        dirNode = -1;
-                    }
-                    filesName k(fileName,dirNode);
-                    free(i);
-                    return k;
-                }
+                            char *nameOfFile =(char*) malloc(strlen(fileName)+1);
+                            nameOfFile[strlen(fileName)] = 0;
+                            memcpy(nameOfFile, fileName, strlen(fileName));
 
-                if(counterFiles == 1)
-                {
-                    nrInode = checkValueInMap(inode->pointers,fileName,INODE_TYPE);
-                    inode = &(fs->inodes[nrInode]);
-                    if((type_of_operation == CREATE && inode->type == INODE_TYPE) || (type_of_operation == DELETE && inode->type != INODE_TYPE))
-                        dirNode = -1;
-
-                    filesName k(fileName,dirNode);
-                    free(i);
-                    return k;
+                            filesName k(nameOfFile,dirNode);
+                            return k;
                 }
+                filesName k ("",-1);
+                return k;
             }
     }
     if(type_of_operation == CREATE)
@@ -227,11 +202,9 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
         nameOfFile[strlen(fileName)] = 0;
         memcpy(nameOfFile, fileName, strlen(fileName));
         filesName k (nameOfFile,dirNode);
-        free(i);
         return  k;
     }
     filesName k (fileName,-1);
-    free(i);
     return  k;
 
 }
@@ -273,29 +246,34 @@ int server::updateLinksMapAndCreateFile(int & dirNode)
     return nodeNumber;
 }
 
-
-//return nodeNumer deleted file
-int server::updateLinksMapAndDeleteFile(filesName & fileStruct)
+/**
+@args struktua - zawiera nr inode katalogu nadrzednego,w którym trzeba zrobic update na tablicy pointerów
+                    oraz nazwę pliku do update i dalszego usunięcia
+@return  return nr Inode do usuniecia
+int server::updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE)
 {
-/*
-    int dirNode = fileStruct.second;
-    INode* inode = &(fs->inodes[dirNode]);
-    for(int i =0; i < sizeof (inode->pointers); ++i)
-        if(inode->pointers[i] == fileStruct.first && i < 8)
-            inode->pointers[i] = 0;
-    //inode->pointers -= 1;
+    INode* inode = &(fs->inodes[fileStruct.second]);//get dirInode
 
-    int counter = checkValueCount(inode->mapsDirFile,fileStruct.first);
-    int nodeNumber = checkValueInMap(inode->mapsDirFile,fileStruct.first);
-    if(counter == 2)
-        nodeNumber = returnSecondValueOfMaps(inode->mapsDirFile,fileStruct.first,nodeNumber);
-
-    inode->mapsDirFile.erase(nodeNumber);
-    free(fileStruct.first);
-
-    return nodeNumber;
-    */
+    for(int i = 0; i < sizeof(inode->pointers)/sizeof(int) ; ++i)
+    {
+        if(strcmp(fs->inodes[inode->pointers[i]].name , fileStruct.first) == 0)
+        {
+           if(fs->inodes[inode->pointers[i]].type == TYP_INODE)
+           {
+                int inodeFileToDelete = inode->pointers[i];
+                inode->pointers[i] = 0;//ustawiam w pointerze na 0 dowiazanie
+                return inodeFileToDelete;//zwracam inode danego pliku
+           }
+        }
+        if(fs->inodes[inode->pointers[i]].type == TYPE_HELPER)
+        {
+            filesName fileTemporaryStruct(fileStruct.first,inode->pointers[i]);
+            updateLinksMapAndDeletePointer(fileTemporaryStruct,TYP_INODE);
+        }
+    }
+    return -1;
 }
+
 
 int server::checkValueInMap(int *maps,char* value,int TYP_INODE)
 {
@@ -312,15 +290,14 @@ int server::checkValueInMap(int *maps,char* value,int TYP_INODE)
     return -1;
 }
 
-int & server::checkValueCount(int *maps,char* value,int & counter)
-{
-    //int counter = 0;
-    for(int i = 0; i < sizeof(maps)/sizeof(int) ; ++i)
-    {
-        if(strcmp(fs->inodes[maps[i]].name, value) == 0)
-             ++counter;
-        if(fs->inodes[maps[i]].type == TYPE_HELPER)
-            checkValueCount(fs->inodes[maps[i]].pointers,value,counter);
-    }
-    return counter;
-}
+
+/**
+@args   maps - wskaznik na listę pointerów inode-a
+        value - nazwa pliku/katalogu
+        TYP_INODE - typ inode który musimy sprawdzić lub przy usunięciu TYP_INODE musimy być równy TYPE_FILE
+        type_of_operation - typ operacji - albo sprawdzanie czy dany plik/katalog nalezy do listy pointerów inode-a
+@return
+        IF type_of_operation == CHECK -> return nr Inode pod którym znalezliśmy dany obiekt typu TYP_INODE else -1
+        IF type_of_operation == DELETE -> ustawiamy w tablicy pointerów wskazanie na 0,return nr Inode
+*/
+

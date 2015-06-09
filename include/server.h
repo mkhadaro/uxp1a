@@ -2,8 +2,10 @@
 #define SERVER_H
 
 #include "../include/shared_memory.h"
+#include <stdio.h>
 #include <iostream>
-#include <map>
+#include <stdlib.h>
+#include <string.h>
 
 
 //struktura opakowujaca nazwe pliku do utworzenia lub usuniecia oraz katalog nadrzedny
@@ -28,7 +30,7 @@ class server
         void setNewInodeData(int inodeNumber, int type, int r, int w, int x,char* name);
         void setInodeBit(int number, bool value);
 
-        void simplefs_mkdir(char* name);
+        int simplefs_mkdir(char* name);
         int simplefs_unlink(char* name);
 
         FileSystem* fs;
@@ -40,9 +42,8 @@ class server
             filesName checkName(char* name,int INODE_TYPE,int typeOfOperation);
 
             int checkValueInMap(int *maps,char* value,int TYP_INODE);
-            int & checkValueCount(int *maps,char* value,int & counter);
             int updateLinksMapAndCreateFile(int & dirNode);
-            int updateLinksMapAndDeleteFile(filesName & fileStruct);
+            int updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE);
 
 };
 
