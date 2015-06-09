@@ -8,36 +8,36 @@
 
 server::server()
 {
-    // int pamiec_id = shmget(MEMORY_KEY, sizeof(FileSystem), 0777 | IPC_CREAT | IPC_EXCL);
-    // //alokujemy pamiec wspoldzielona
-    // if(pamiec_id == -1)
-    // {
-    //     printf("Błąd przy alokacji pamieci współdzielonej\n");
-    //     return ;
-    // }
+    int pamiec_id = shmget(MEMORY_KEY, sizeof(FileSystem), 0777 | IPC_CREAT | IPC_EXCL);
+    //alokujemy pamiec wspoldzielona
+    if(pamiec_id == -1)
+    {
+        printf("Błąd przy alokacji pamieci współdzielonej\n");
+        return ;
+    }
 
-    // fs = attachSegmentOfSharedMemory();
+    fs = attachSegmentOfSharedMemory();
 
-    // for(int i =0; i< INODE_COUNT ; ++i)
-    // {
-    //     fs->inodes[i].type = -1;
-    // }
+    for(int i =0; i< INODE_COUNT ; ++i)
+    {
+        fs->inodes[i].type = -1;
+    }
 
     mkfifo(SERVER_FIFO, 0666);
 }
 
 server::~server()
 {
-  //  detachSegmentOfSharedMemory(fs);
-  //  //pobieramy id pamieci wspoldzielonej
-  // int pamiec_id = shmget(MEMORY_KEY, sizeof(FileSystem), 0);
-  // if(pamiec_id == -1)
-  // {
-  //   printf("Błąd przy uzyskaniu segmentu pamięci współdzielonej\n");
-  //   return ;
-  // }
-  // //zwalnianie pamięci współdzielonej
-  // shmctl(pamiec_id, IPC_RMID, NULL);
+   detachSegmentOfSharedMemory(fs);
+   //pobieramy id pamieci wspoldzielonej
+  int pamiec_id = shmget(MEMORY_KEY, sizeof(FileSystem), 0);
+  if(pamiec_id == -1)
+  {
+    printf("Błąd przy uzyskaniu segmentu pamięci współdzielonej\n");
+    return ;
+  }
+  //zwalnianie pamięci współdzielonej
+  shmctl(pamiec_id, IPC_RMID, NULL);
 }
 
 void server::work() 
