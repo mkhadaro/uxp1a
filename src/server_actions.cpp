@@ -250,6 +250,8 @@ int server::updateLinksMapAndCreateFile(int & dirNode)
 @args struktua - zawiera nr inode katalogu nadrzednego,w którym trzeba zrobic update na tablicy pointerów
                     oraz nazwę pliku do update i dalszego usunięcia
 @return  return nr Inode do usuniecia
+*/
+
 int server::updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE)
 {
     INode* inode = &(fs->inodes[fileStruct.second]);//get dirInode

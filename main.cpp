@@ -34,6 +34,7 @@ void ls(server & server)
             std::cout<<endl;
         }
     }
+    std::cout<<endl;
 }
 
 int testCreateDir(server & server)
