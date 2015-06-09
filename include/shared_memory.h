@@ -27,8 +27,9 @@
 
 //stale dotyczace typow operacji
 #define DELETE 1
+#define GET_VALUE 1
 #define CREATE 2
-#define CHECK_VALUE 3
+
 
 #define int_l long long int
 
@@ -54,7 +55,7 @@ typedef struct
 
 typedef struct
 {
-    FileDescription descriprionTable[DESCRIPTION_TABLE_SIZE];
+    //FileDescription descriprionTable[DESCRIPTION_TABLE_SIZE];
 	char superBlock[BLOCK_SIZE];
 	char inodeBitmap[BLOCK_SIZE];
 	char blockBitmap[BLOCK_SIZE];
