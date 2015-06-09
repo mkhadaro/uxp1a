@@ -12,6 +12,7 @@
 #define INODE_COUNT 512
 #define BLOCK_COUNT 1031
 #define DATA_BLOCK_COUNT 1024
+#define DESCRIPTION_TABLE_SIZE 128
 #define BLOCK_SIZE 4096
 
 #define INODE_NAME_SIZE 16
@@ -46,12 +47,19 @@ typedef struct inode
 
 typedef struct
 {
+    int fileDescriptor;
+    int & nrInode;
+    int mode;
+}FileDescription;
+
+typedef struct
+{
+    FileDescription descriprionTable[DESCRIPTION_TABLE_SIZE];
 	char superBlock[BLOCK_SIZE];
 	char inodeBitmap[BLOCK_SIZE];
 	char blockBitmap[BLOCK_SIZE];
 	INode inodes[INODE_COUNT];
 	char dataBlocks[DATA_BLOCK_COUNT*BLOCK_SIZE];
 } FileSystem;
-
 
 #endif // SHARED_MEMORY_H
