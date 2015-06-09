@@ -69,31 +69,3 @@ void server::detachSegmentOfSharedMemory(FileSystem* shared_memory)
         return;
     }
 }
-
-void server::simplefs_mkdir(char* name)
-{
-    //zwraca strukturę z nr Inode katalogu nadrzędnego oraz nazwa pliku do utworzenia po rozbiorze slowa wejsciowego
-    filesName dirNodeAndFileName = checkName(name,TYPE_DIR,CREATE);
-
-    if(dirNodeAndFileName.second == -1)
-    {
-        printf("Błąd przy tworzeniu katalogu\n");
-        return ;
-    }
-    if(dirNodeAndFileName.second == -2)//stworzylismy katalog główny "/"
-        return;
-
-    // nr inode - do dalszego utworzenia nowego nr inode dla katalogu
-    int_l nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);
-    if(nodeNumber == -1)
-    {
-        printf("Błąd przy tworzeniu katalogu \n");
-        return ;
-    }
-	setNewInodeData(nodeNumber, TYPE_DIR, 1, 1, 1,dirNodeAndFileName.first);
-	setInodeBit(nodeNumber, true);
-
-	return;
-}
-
-
