@@ -2,7 +2,7 @@
 
 #include "../include/server.h"
 
-int_l server::createFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE], int type, int r, int w, int x)
+int_l server::createFile(char *name , int type, int r, int w, int x)
 {
     //zwraca struktura z nr Inode katalogu nadrzędnego oraz nazwa pliku do utworzenia po rozbiorze slowa wejsciowego
     filesName dirNodeAndFileName = checkName(name,TYPE_FILE,CREATE);
@@ -55,6 +55,13 @@ void server::simplefs_mkdir(char* name)
     return;
 }
 
+int server::simplefs_unlink(char* name)
+{
+    filesName dirNodeAndFileName = checkName(name,TYPE_FILE,DELETE);
+    if(dirNodeAndFileName.second == -1)
+        return -1;
+
+}
 int server::deleteFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE])
 {
     filesName dirNodeAndFileName = checkName(name,TYPE_FILE,CREATE);

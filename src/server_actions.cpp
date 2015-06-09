@@ -166,8 +166,7 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
             if(i[l] =='/')
             {
                 INode* inode = &(fs->inodes[nrInode]);
-
-                nrInode = checkValueInMap(inode->pointers,fileName,INODE_TYPE);
+                nrInode = checkValueInMap(inode->pointers,fileName,TYPE_DIR);
                 if(nrInode == -1)
                 {
                     free(i);

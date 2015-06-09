@@ -15,7 +15,7 @@ class server
         server();
         ~server();
 
-        int_l createFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE], int type, int r, int w, int x);
+        int_l createFile(char *name, int type, int r, int w, int x);
         int deleteFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE]);
         int_l writeToFile(int_l inodeNumber, int_l size);
 
@@ -29,6 +29,7 @@ class server
         void setInodeBit(int number, bool value);
 
         void simplefs_mkdir(char* name);
+        int simplefs_unlink(char* name);
 
         FileSystem* fs;
 
