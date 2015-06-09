@@ -13,8 +13,6 @@ void showFiles(server & server,INode *inode)
     for(int j =0; j < sizeof(inode->pointers)/sizeof(int); ++j)
     {
         std::cout<<inode->pointers[j]<<" ";
-        //if(inode->pointers[j] != 0)
-            //std::cout<<"name "<<server.fs->inodes[inode->pointers[j]].name<<" ";
         if(server.fs->inodes[inode->pointers[j]].type == TYPE_HELPER)
         {
                 std::cout<<"\n\t"<<"\t";
