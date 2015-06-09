@@ -2,8 +2,14 @@
 #define SERVER_H
 
 #include "../include/shared_memory.h"
+#include "../include/communication.h"
+
 #include <iostream>
 #include <map>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h> 
+#include <unistd.h>
 
 
 //struktura opakowujaca nazwe pliku do utworzenia lub usuniecia oraz katalog nadrzedny
@@ -14,6 +20,8 @@ class server
     public:
         server();
         ~server();
+
+        void work();
 
         int_l createFile(char *name, int type, int r, int w, int x);
         int deleteFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE]);

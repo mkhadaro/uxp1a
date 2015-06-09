@@ -21,7 +21,7 @@
 #define TYPE_HELPER 2
 
 #define NAME_SIZE 24
-#define PATH_SIZE
+#define PATH_SIZE 128
 #define EMPTY_ADDRESS 0xFFFFFFFFFFFFFFFF
 
 //stale dotyczace typow operacji
