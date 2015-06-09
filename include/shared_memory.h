@@ -6,7 +6,7 @@
 #include <iostream>
 #include <map>
  //klucz do odwolan do pamieci wspoldz.
-#define MEMORY_KEY     1062//1056
+#define MEMORY_KEY     1068//1056
 
 // Stale dotyczace systemu plikow
 #define INODE_COUNT 512
@@ -20,6 +20,13 @@
 #define TYPE_DIR 0
 #define TYPE_FILE 1
 #define TYPE_HELPER 2
+
+//mode
+#define READ 1
+#define WRITE 2
+
+#define CHILD 1
+#define PARENT_DIR 2
 
 #define NAME_SIZE 24
 #define PATH_SIZE
@@ -49,18 +56,18 @@ typedef struct inode
 typedef struct
 {
     int fileDescriptor;
-    int & nrInode;
+    int nrInode;
     int mode;
 }FileDescription;
 
 typedef struct
 {
-    //FileDescription descriprionTable[DESCRIPTION_TABLE_SIZE];
 	char superBlock[BLOCK_SIZE];
 	char inodeBitmap[BLOCK_SIZE];
 	char blockBitmap[BLOCK_SIZE];
 	INode inodes[INODE_COUNT];
 	char dataBlocks[DATA_BLOCK_COUNT*BLOCK_SIZE];
+	FileDescription descriprionTable[DESCRIPTION_TABLE_SIZE];
 } FileSystem;
 
 #endif // SHARED_MEMORY_H

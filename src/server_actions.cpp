@@ -139,7 +139,7 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
             setInodeBit(nodeNumebr, true);
 
         }
-        filesName k("",-2);
+        filesName k("",-1);
         return k;
     }
     int j = 0;
@@ -208,8 +208,6 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
     return  k;
 
 }
-
-
 // tworzenie pliku w katalogu, sam znajduje numer inoda
 /**
 @return nowy nrInode - do utworzenia katalogu
@@ -303,3 +301,50 @@ int server::checkValueInMap(int *maps,char* value,int TYP_INODE)
         IF type_of_operation == DELETE -> ustawiamy w tablicy pointerów wskazanie na 0,return nr Inode
 */
 
+
+int server::getInodeNumber(char *name,int TYP_INODE,int file_type)
+{
+        filesName dirNodeAndFileName = checkName(name,TYP_INODE,GET_VALUE);
+        if(dirNodeAndFileName.second == -1)
+            return -1;
+        if(file_type == PARENT_DIR)
+            return dirNodeAndFileName.second;
+        if(file_type == CHILD)
+        {
+            INode & node = fs->inodes[dirNodeAndFileName.second];
+            return checkValueInMap(node.pointers,dirNodeAndFileName.first,TYP_INODE);
+        }
+}
+
+//tworzy deskryptor pliku z podanym nrInod oraz trybem
+int server::createDescription(int & nrInod,int & mode)
+{
+    for(int i = 0; i < DESCRIPTION_TABLE_SIZE; ++i)
+    {
+        if(fs->descriprionTable[i].fileDescriptor == 0)
+        {
+            fs->descriprionTable[i].fileDescriptor = i + 1;
+            fs->descriprionTable[i].mode = mode;
+            fs->descriprionTable[i].nrInode = nrInod;
+            return fs->descriprionTable[i].fileDescriptor;
+        }
+    }
+    return -1;
+}
+
+//funkcja sprawdza uprawnienia inode-a pod nrInode
+int server::checkMode(int & nrInode,int & mode)
+{
+    INode & node = fs->inodes[nrInode];
+    if(mode == READ)
+    {
+        if(node.r == 1)
+            return 1;
+    }
+    if(mode == WRITE)
+    {
+        if(node.w == 1)
+            return 1;
+    }
+    return 0;
+}

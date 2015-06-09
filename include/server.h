@@ -32,6 +32,7 @@ class server
 
         int simplefs_mkdir(char* name);
         int simplefs_unlink(char* name);
+        int simplefs_open(char* name,int mode);
 
         FileSystem* fs;
 
@@ -44,6 +45,10 @@ class server
             int checkValueInMap(int *maps,char* value,int TYP_INODE);
             int updateLinksMapAndCreateFile(int & dirNode);
             int updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE);
+
+            int createDescription(int & nrInode,int & mode);
+            int getInodeNumber(char *name,int TYP_INODE,int file_type);
+            int checkMode(int & nrInode,int & mode);
 
 };
 

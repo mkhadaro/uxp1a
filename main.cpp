@@ -61,11 +61,14 @@ int testCreateDir(server & server)
     server.simplefs_mkdir("/r/abs/k");
 }
 
-int testUnlink(server & server)
+int testUnlink(server & server,char *nazwa)
 {
-    char nazwa[] = "/root/abs";
-    char *wskaznik = nazwa;
-    server.simplefs_unlink(wskaznik);
+    server.simplefs_unlink(nazwa);
+}
+
+int testOpenFile(server & server,char *name)
+{
+    std::cout<<"file description "<<server.simplefs_open(name,READ)<<std::endl;
 }
 
 int main(int arc,char** argv)
@@ -73,15 +76,14 @@ int main(int arc,char** argv)
     server server;
     testCreateDir(server);
     ls(server);
-    testUnlink(server);
+    testUnlink(server,"/root/home");
     ls(server);
-    server.simplefs_mkdir("/root/home");
+    server.simplefs_mkdir("/root/tut");
     ls(server);
-
-    //server.setBlockBit(0, 7, true);
-    //server.setBlockBit(12, 7, true);
-    //bool inode = server.canAddToFile(7, 5);
-    //printf(inode ? "true\n" : "false\n");
+    testOpenFile(server,"/root/tut");
+    testUnlink(server,"/root/tut");
+    ls(server);
+    testOpenFile(server,"/root");
 
     return 0;
 }

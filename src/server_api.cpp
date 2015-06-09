@@ -9,19 +9,13 @@ int_l server::createFile(char *name , int type, int r, int w, int x)
         printf("Błąd przy utworzeniu pliku\n");
         return -1;
     }
-    if(dirNodeAndFileName.second == -2)
-        return -1;
-    /**
-    @return nowy nrInode do utworzenia  pliku
-    */
-    int_l nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);
 
+    int_l nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);
     if(nodeNumber == -1)
     {
         printf("Błąd przy utworzeniu pliku\n");
         return -1;
     }
-
 	setNewInodeData(nodeNumber, type, r, w, x,dirNodeAndFileName.first);
     setInodeBit(nodeNumber, true);
 	return nodeNumber;
@@ -37,9 +31,6 @@ int server::simplefs_mkdir(char* name)
         printf("Błąd przy tworzeniu katalogu\n");
         return -1;
     }
-    if(dirNodeAndFileName.second == -2)//stworzylismy katalog główny "/"
-        return -1;
-
     // nr inode - do dalszego utworzenia nowego nr inode dla katalogu
     int_l nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);
     if(nodeNumber == -1)
@@ -56,15 +47,21 @@ int server::simplefs_mkdir(char* name)
 //funkcja usuwająca plik
 int server::simplefs_unlink(char* name)
 {
-    filesName dirNodeAndFileName = checkName(name,TYPE_FILE,DELETE);
-    std::cout<<dirNodeAndFileName.first<<" "<<dirNodeAndFileName.second<<std::endl;
-    if(dirNodeAndFileName.second == -1)
+    //pobieram node pliku do usunięcia i sprawdzam czy istnieją deskryptory
+    int inodeNumber = getInodeNumber(name,TYPE_FILE,CHILD);
+    if(inodeNumber == -1)
         return -1;
+    for(int i = 0; i < INODE_NAME_SIZE; ++i)
+        if(fs->descriprionTable[i].nrInode == inodeNumber)
+            return -1;
 
-    INode* inode = &(fs->inodes[dirNodeAndFileName.second]);
 
-    int inodeNumber = updateLinksMapAndDeletePointer(dirNodeAndFileName,TYPE_FILE);
-    std::cout<<inodeNumber<<std::endl;
+    filesName dirNodeAndFileName = checkName(name,TYPE_FILE,GET_VALUE);
+    if(dirNodeAndFileName.second == -1)
+            return -1;
+    INode & node = fs->inodes[dirNodeAndFileName.second];
+
+    updateLinksMapAndDeletePointer(dirNodeAndFileName,TYPE_FILE);
 
     free(dirNodeAndFileName.first);//zwalniam pamięć przydzieloną na nazwę po rozbiorze sciężki z nazwą
 
@@ -108,4 +105,14 @@ int_l server::writeToFile(int_l inodeNumber, int_l size)
     fs->inodes[inodeNumber].size = newSize;
     setBlockBit(startingBlock, blocksNeeded, true);
     return inodeSize;
+}
+
+int server::simplefs_open(char* name,int mode)
+{
+    int inodeNumber = getInodeNumber(name,TYPE_FILE,CHILD);
+    if(inodeNumber < 0)
+        return -1;
+    if(checkMode(inodeNumber,mode) == 0)
+        return -1;
+    return createDescription(inodeNumber,mode);
 }
