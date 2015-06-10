@@ -45,6 +45,10 @@ class server
 
         FileSystem* fs;
 
+        void showServerState();
+        void printFreeBlockBitmap();
+        void printFreeInodeBitmap();
+
         private:
             FileSystem* attachSegmentOfSharedMemory();
             void detachSegmentOfSharedMemory(FileSystem* shared_memory);
@@ -54,6 +58,7 @@ class server
             int checkValueInMap(int *maps,char* value,int TYP_INODE);
             int updateLinksMapAndCreateFile(int & dirNode);
             int updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE);
+
 
 };
 

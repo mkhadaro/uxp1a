@@ -81,23 +81,36 @@ int main(int argc,char** argv)
     // server.simplefs_mkdir("/");
     // ls(server);
     
-	const char* clientStr = "c";
-	const char* serverStr = "s";
-	{
-		if(strcmp(argv[1], clientStr) == 0) 
-		{
-			printf("klient\n");
-			client c;
-			interface i;
-			i.run(c);
-		}
-		if(strcmp(argv[1], serverStr) == 0)
-		{
-			printf("server\n");
-			server s;
-			s.work();
-		}
-	}
+    if(argc == 2)
+    {
+    	const char* clientStr = "c";
+    	const char* serverStr = "s";
+    	{
+    		if(strcmp(argv[1], clientStr) == 0) 
+    		{
+    			printf("klient\n");
+    			client c;
+    			interface i;
+    			i.run(c);
+    		}
+    		if(strcmp(argv[1], serverStr) == 0)
+    		{
+    			printf("server\n");
+    			server s;
+    			s.work();
+    		}
+    	}
+    }
+    else if (argc == 1)
+    {
+        server s;
+        s.simplefs_mkdir("/");
+        s.simplefs_mkdir("/root");
+        s.simplefs_mkdir("/adf");
+        s.createFile("/adf/sdf1", TYPE_FILE, 1, 1, 1);
+        s.showServerState();
+        ls(s);
+    }
 
     // testCreateDir(server);
     //server.setBlockBit(0, 7, true);
