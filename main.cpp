@@ -1,10 +1,13 @@
 #include <iostream>
-#include "include/server.h"
 #include "include/shared_memory.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <set>
+
+#include "include/server.h"
+#include "include/client.h"
+#include "include/interface.h"
 
 using namespace std;
 
@@ -71,8 +74,9 @@ int testOpenFile(server & server,char *name)
     std::cout<<"file description "<<server.simplefs_open(name,READ)<<std::endl;
 }
 
-int main(int arc,char** argv)
+int main(int argc,char** argv)
 {
+    /*
     server server;
     testCreateDir(server);
     ls(server);
@@ -84,6 +88,23 @@ int main(int arc,char** argv)
     testUnlink(server,"/root/tut");
     ls(server);
     testOpenFile(server,"/root");
-
+    */
+	const char* clientStr = "c";
+	const char* serverStr = "s";
+	{
+		if(strcmp(argv[1], clientStr) == 0)
+		{
+			printf("klient\n");
+			client c;
+			interface i;
+			i.run(c);
+		}
+		if(strcmp(argv[1], serverStr) == 0)
+		{
+			printf("server\n");
+			server s;
+			s.work();
+		}
+	}
     return 0;
 }

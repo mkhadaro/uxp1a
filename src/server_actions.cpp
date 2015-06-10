@@ -13,7 +13,6 @@ void server::setNewInodeData(int inodeNumber, int type, int r, int w, int x, cha
 	fs->inodes[inodeNumber].x = x;
 	fs->inodes[inodeNumber].size = 0;
 	fs->inodes[inodeNumber].address = EMPTY_ADDRESS;
-	//free(name);
 }
 
 int_l server::findFreeBlockNumber(int_l blocksNeeded)

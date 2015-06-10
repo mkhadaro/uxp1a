@@ -6,7 +6,8 @@
 #include <iostream>
 #include <map>
  //klucz do odwolan do pamieci wspoldz.
-#define MEMORY_KEY     1068//1056
+
+#define MEMORY_KEY     1056
 
 // Stale dotyczace systemu plikow
 #define INODE_COUNT 512
@@ -29,7 +30,7 @@
 #define PARENT_DIR 2
 
 #define NAME_SIZE 24
-#define PATH_SIZE
+#define PATH_SIZE 128
 #define EMPTY_ADDRESS 0xFFFFFFFFFFFFFFFF
 
 //stale dotyczace typow operacji
