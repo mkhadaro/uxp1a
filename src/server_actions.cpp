@@ -126,6 +126,8 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
     char fileName[16] = {0};
     fileName[ 0] = '/';
     INode* root_inode = &(fs->inodes[0]);
+
+
     if(strlen(name) == 1)
     {
         if(root_inode->type == -1 && type_of_operation == CREATE)
@@ -134,10 +136,16 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
             char *file =(char*) malloc(strlen(fileName)+1);
             memcpy(file, fileName, strlen(fileName));
             strcpy(file,fileName);
+
             setNewInodeData(nodeNumber,INODE_TYPE, 1, 1, 1,file);
             setInodeBit(nodeNumber, true);
         }
-        filesName k("",-2);
+        filesName k("",-1);
+        return k;
+    }
+    if(root_inode->type == -1)
+    {
+        filesName k("",-1);
         return k;
     }
     int j = 0;

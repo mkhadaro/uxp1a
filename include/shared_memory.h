@@ -7,7 +7,7 @@
 #include <map>
 
  //klucz do odwolan do pamieci wspoldz.
-#define MEMORY_KEY     1057
+#define MEMORY_KEY     1066
 
 
 // Stale dotyczace systemu plikow
