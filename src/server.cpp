@@ -19,9 +19,10 @@ server::server()
     fs = attachSegmentOfSharedMemory();
 
     for(int i =0; i< INODE_COUNT ; ++i)
-    {
         fs->inodes[i].type = -1;
-    }
+
+    for(int i =0; i< DESCRIPTION_TABLE_SIZE ; ++i)
+        fs->descriprionTable[i].nrInode = -1;
 
     mkfifo(SERVER_FIFO, 0666);
 }

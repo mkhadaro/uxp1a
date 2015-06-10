@@ -13,7 +13,6 @@ void server::setNewInodeData(int inodeNumber, int type, int r, int w, int x, cha
 	fs->inodes[inodeNumber].x = x;
 	fs->inodes[inodeNumber].size = 0;
 	fs->inodes[inodeNumber].address = EMPTY_ADDRESS;
-	//free(name);
 }
 
 int_l server::findFreeBlockNumber(int_l blocksNeeded)
@@ -137,9 +136,10 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
             strcpy(file,fileName);
             setNewInodeData(nodeNumebr,INODE_TYPE, 1, 1, 1,file);
             setInodeBit(nodeNumebr, true);
-
+            setNewInodeData(nodeNumebr,INODE_TYPE, 1, 1, 1,fileName);
+            setInodeBit(nodeNumebr, true);
         }
-        filesName k("",-2);
+        filesName k("",-1);
         return k;
     }
     int j = 0;
@@ -185,12 +185,12 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
                 //jesli mamy operacje usuwania oraz mamy inode o podanym wyzej typie - zwracamy inode dira oraz nazwe pliku do usuniecia;
                 if(type_of_operation == DELETE && inode->type == INODE_TYPE)
                 {
-                            char *nameOfFile =(char*) malloc(strlen(fileName)+1);
-                            nameOfFile[strlen(fileName)] = 0;
-                            memcpy(nameOfFile, fileName, strlen(fileName));
+                    char *nameOfFile =(char*) malloc(strlen(fileName)+1);
+                    nameOfFile[strlen(fileName)] = 0;
+                    memcpy(nameOfFile, fileName, strlen(fileName));
+                    filesName k(nameOfFile,dirNode);
 
-                            filesName k(nameOfFile,dirNode);
-                            return k;
+                    return k;
                 }
                 filesName k ("",-1);
                 return k;
@@ -208,8 +208,6 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
     return  k;
 
 }
-
-
 // tworzenie pliku w katalogu, sam znajduje numer inoda
 /**
 @return nowy nrInode - do utworzenia katalogu
@@ -303,3 +301,57 @@ int server::checkValueInMap(int *maps,char* value,int TYP_INODE)
         IF type_of_operation == DELETE -> ustawiamy w tablicy pointerów wskazanie na 0,return nr Inode
 */
 
+
+int server::getInodeNumber(char *name,int TYP_INODE,int file_type)
+{
+        filesName dirNodeAndFileName = checkName(name,TYP_INODE,GET_VALUE);
+        if(dirNodeAndFileName.second == -1)
+            return -1;
+        if(file_type == PARENT_DIR)
+            return dirNodeAndFileName.second;
+        if(file_type == CHILD)
+        {
+            INode & node = fs->inodes[dirNodeAndFileName.second];
+            return checkValueInMap(node.pointers,dirNodeAndFileName.first,TYP_INODE);
+        }
+}
+
+//tworzy deskryptor pliku z podanym nrInod oraz trybem
+int server::createDescription(int & nrInod,int & mode)
+{
+    for(int i = 0; i < DESCRIPTION_TABLE_SIZE; ++i)
+    {
+        if(fs->descriprionTable[i].fileDescriptor == 0)
+        {
+            fs->descriprionTable[i].fileDescriptor = i + 1;
+            fs->descriprionTable[i].mode = mode;
+            fs->descriprionTable[i].nrInode = nrInod;
+            return fs->descriprionTable[i].fileDescriptor;
+        }
+    }
+    return -1;
+}
+
+//funkcja sprawdza uprawnienia inode-a pod nrInode
+int server::checkMode(int & nrInode,int & mode)
+{
+    INode & node = fs->inodes[nrInode];
+    if(mode == READ)
+    {
+        if(node.r == 1)
+            return 1;
+    }
+    if(mode == WRITE)
+    {
+        if(node.w == 1)
+            return 1;
+    }
+    return 0;
+}
+
+int & server::getNodeNumberByFD(int & fd)
+{
+        for(int i = 0; i < INODE_NAME_SIZE; ++i)
+            if(fs->descriprionTable[i].fileDescriptor == fd)
+                return fs->descriprionTable[i].nrInode;
+}
