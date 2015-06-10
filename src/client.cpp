@@ -1,9 +1,8 @@
 #include "../include/client.h"
 #include <iostream>
-#include <string>
-
-
 #include <string.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
 client::client()
 {
@@ -12,11 +11,13 @@ client::client()
 	sprintf(cpid, "%ld", (long)getpid());
 	strcat(clientFifoId, cpid);
 	mkfifo(clientFifoId, 0666);
+	fs = attachSegmentOfSharedMemory();
 }
 
 client::~client()
 {
-
+	detachSegmentOfSharedMemory(fs);
+	unlink(clientFifoId);
 }
 
 serverResponse client::sendRequest(int type, char path[128], int_l inodeNumber, int_l size, int mode)
@@ -47,55 +48,6 @@ serverResponse client::sendRequest(int type, char path[128], int_l inodeNumber, 
 	return res;
 }
 
-int client::userInterface()
-{
-    std::string polecenie;
-    std::cin>>polecenie;
-
-    if (polecenie == "help")
-    {
-        std::cout << "mkdir" << std::endl;
-        std::cout << "open" << std::endl;
-        std::cout << "unlink" << std::endl;
-        std::cout << "creat" << std::endl;
-        std::cout << "read" << std::endl;
-        std::cout << "write" << std::endl;
-        std::cout << "lseek" << std::endl;
-        std::cout << "koniec - k" << std::endl;
-    }
-    else if (polecenie == "mkdir")
-    {
-        std::cout<< "poprawne polecenie" << std::endl;
-    }
-    else if (polecenie == "open")
-    {
-        std::cout<< "poprawne polecenie" << std::endl;
-    }
-    else if (polecenie == "unlink")
-    {
-        std::cout<< "poprawne polecenie" << std::endl;
-    }
-    else if (polecenie == "creat")
-    {
-        std::cout<< "poprawne polecenie" << std::endl;
-    }
-    else if (polecenie == "read")
-    {
-        std::cout<< "poprawne polecenie" << std::endl;
-    }
-    else if (polecenie == "write")
-    {
-        std::cout<< "poprawne polecenie" << std::endl;
-    }
-    else if (polecenie == "lseek")
-    {
-        std::cout<< "poprawne polecenie" << std::endl;
-    }
-    else if (polecenie == "k") return 1;
-    else std::cout<<"NIE MA TAKIEGO POLECENIA.\n" << std::endl;
-    return 0;
-}
-
 void client::simplefs_open(char* name,int mode)
 {
     //
@@ -122,17 +74,17 @@ void client::simplefs_write(int fd,char* buf,int len)
     //wyslanie wiadomosci do serwera
 
 
-    int fd = simplefs_open(name, WRITE);
-    int pamiec_id = shmget(MEMORY_KEY, sizeof(FileSystem), 0);
-    shared_memory = attachSegmentOfSharedMemory();
+    // int fd = simplefs_open(name, WRITE);
+    // int pamiec_id = shmget(MEMORY_KEY, sizeof(FileSystem), 0);
+    // shared_memory = attachSegmentOfSharedMemory();
 
-    int written_bytes = write(fd, buffer, len);
-    if (written_bytes == -1)
-    {
-        printf("Nie zapisano");
-    }
-    close(fd);
-    return written_bytes;
+    // int written_bytes = write(fd, buffer, len);
+    // if (written_bytes == -1)
+    // {
+    //     printf("Nie zapisano");
+    // }
+    // close(fd);
+    // return written_bytes;
 
 
 
@@ -140,4 +92,64 @@ void client::simplefs_write(int fd,char* buf,int len)
 void client::simplefs_lseek(int fd,int whence,int offset)
 {
 
+}
+
+void client::simplefs_list(char* path)
+{
+	for(int i = 0; i < INODE_COUNT ;++i)
+    {
+        if(fs->inodes[i].type != -1)
+        {
+            std::cout<<fs->inodes[i].name <<"\t"<<i<<"\t";
+            showFiles(&fs->inodes[i]);
+            std::cout<<std::endl;
+        }
+    }
+    std::cout<<std::endl;
+}
+
+void client::showFiles(INode *inode)
+{
+    for(int j =0; j < sizeof(inode->pointers)/sizeof(int); ++j)
+    {
+        std::cout<<inode->pointers[j]<<" ";
+        //if(inode->pointers[j] != 0)
+            //std::cout<<"name "<<server.fs->inodes[inode->pointers[j]].name<<" ";
+        if(fs->inodes[inode->pointers[j]].type == TYPE_HELPER)
+        {
+                std::cout<<"\n\t"<<"\t";
+                showFiles(&fs->inodes[inode->pointers[j]]);
+        }
+    }
+}
+
+FileSystem* client::attachSegmentOfSharedMemory()
+{
+    //pobieramy id pamieci wspoldzielonej
+    int pamiec_id = shmget(MEMORY_KEY, sizeof(FileSystem), 0);
+    if(pamiec_id == -1)
+    {
+        printf("Blad przy uzyskaniu id pamieci, MEMORY_KEY:%d\n", MEMORY_KEY);
+        return 0;
+    }
+    //podlaczamy sie do segmentu pamieci wspoldzielonej
+    FileSystem* shared_memory;
+    shared_memory = (FileSystem* ) shmat (pamiec_id, 0, 0);
+      //podlaczamy wspoldzielona pamiec do przestrzeni adresowej naszego procesu
+    if(shared_memory == (void *) -1)
+    {
+        printf("Brak dostępu do pamięci współdzielonej\n");
+        return 0;
+    }
+    return shared_memory;
+}
+
+void client::detachSegmentOfSharedMemory(FileSystem* shared_memory)
+{
+    //odlaczamy segment wspoldzelonej pamięci
+    if(shmdt(shared_memory) == -1)
+    {
+        printf("Nieudane odłączenie pamięci współdzielonej\n");
+        return;
+    }
 }

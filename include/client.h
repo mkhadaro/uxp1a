@@ -27,12 +27,16 @@ class client
         void simplefs_read(int fd,char* buf,int len);
         void simplefs_write(int fd,char* buf,int len);
         void simplefs_lseek(int fd,int whence,int len);
+        void simplefs_list(char* path);
 
       // private:
         char clientFifoId[24];
+        FileSystem* fs;
 
         serverResponse sendRequest(int type, char path[128], int_l inodeNumber, int_l size, int mode);
-
+        void showFiles(INode *inode);
+        FileSystem* attachSegmentOfSharedMemory();
+        void detachSegmentOfSharedMemory(FileSystem* shared_memory);
 };
 
 #endif // CLIENT_H

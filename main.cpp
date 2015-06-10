@@ -73,13 +73,13 @@ int testUnlink(server & server)
 
 int main(int argc,char** argv)
 {
- //    server server;
- //    testCreateDir(server);
- //    ls(server);
- //    testUnlink(server);
- //    ls(server);
- //    server.simplefs_mkdir("/root/home");
- //    ls(server);
+    // server server;
+    // testCreateDir(server);
+    // ls(server);
+    // testUnlink(server);
+    // ls(server);
+    // server.simplefs_mkdir("/");
+    // ls(server);
     
 	const char* clientStr = "c";
 	const char* serverStr = "s";
@@ -88,11 +88,8 @@ int main(int argc,char** argv)
 		{
 			printf("klient\n");
 			client c;
-			char tmp[128];
-			strcpy(tmp, "ahoj");
-			// c.sendRequest(0,tmp, 0, 0, 0);
 			interface i;
-			i.run();
+			i.run(c);
 		}
 		if(strcmp(argv[1], serverStr) == 0)
 		{

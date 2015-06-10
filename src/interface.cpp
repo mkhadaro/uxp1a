@@ -7,13 +7,11 @@
 
 #include "../include/interface.h"
 #include "../include/communication.h"
-#include "../include/client.h"
 
 using namespace std;
 
-void interface::run()
+void interface::run(client &c)
 {
-	client c;
 	cout<<"System plikow\n";
 
 	while(true)
@@ -45,9 +43,20 @@ void interface::run()
 		// else if (command == "read")
 		// else if (command == "write")
 		// else if (command == "lseek")
-		// else if (command == "k") return 1;
-		// else std::cout<<"NIE MA TAKIEGO POLECENIA.\n" << std::endl;
-		
+		else if (command.compare("list") == 0)
+		{
+			char path[128];
+			strcpy(path, subs[1].c_str());
+			c.simplefs_list(path);
+		}
+		else if (command.compare("exit") == 0)
+		{
+			break;
+		}
+		else 
+		{ 
+			cout<<"Nieprawidlowe polecenie\n";
+		}
 	}
 
 }
