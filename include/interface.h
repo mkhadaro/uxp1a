@@ -1,10 +1,12 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
+#include "../include/client.h"
+
 class interface
 {
 	public:
-	void run();
+	void run(client &c);
 };
 
 #endif
