@@ -48,6 +48,7 @@ class server
         void showServerState();
         void printFreeBlockBitmap();
         void printFreeInodeBitmap();
+        void printDirectories(int_l inodeNumber, int depth);
 
         private:
             FileSystem* attachSegmentOfSharedMemory();
