@@ -5,6 +5,7 @@
 //w implementacji systemu plikow
 #include <iostream>
 #include <map>
+
  //klucz do odwolan do pamieci wspoldz.
 #define MEMORY_KEY     1056
 

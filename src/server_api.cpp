@@ -124,5 +124,13 @@ int server::simplefs_open(char* name,int mode)
 
 int fd = simplefs_open(char* name,WRITE);
 int nodeNumebr =  getNodeNumberByFD(int & fd)
-write_to_file = (nodeNumber,len)
+if(checkMode(nodeNumber,WRITE) == 1)
+    write_to_file = (nodeNumber,len)
+*/
+
+/*interface READ
+int fd = implefs_open(char* name,READ);
+int nodeNumebr =  getNodeNumberByFD(int & fd)
+    if(checkMode(nodeNumber,READ) == 1)
+read
 */
