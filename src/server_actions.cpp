@@ -136,7 +136,8 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
             strcpy(file,fileName);
             setNewInodeData(nodeNumebr,INODE_TYPE, 1, 1, 1,file);
             setInodeBit(nodeNumebr, true);
-
+            setNewInodeData(nodeNumebr,INODE_TYPE, 1, 1, 1,fileName);
+            setInodeBit(nodeNumebr, true);
         }
         filesName k("",-1);
         return k;
@@ -184,12 +185,12 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
                 //jesli mamy operacje usuwania oraz mamy inode o podanym wyzej typie - zwracamy inode dira oraz nazwe pliku do usuniecia;
                 if(type_of_operation == DELETE && inode->type == INODE_TYPE)
                 {
-                            char *nameOfFile =(char*) malloc(strlen(fileName)+1);
-                            nameOfFile[strlen(fileName)] = 0;
-                            memcpy(nameOfFile, fileName, strlen(fileName));
+                    char *nameOfFile =(char*) malloc(strlen(fileName)+1);
+                    nameOfFile[strlen(fileName)] = 0;
+                    memcpy(nameOfFile, fileName, strlen(fileName));
+                    filesName k(nameOfFile,dirNode);
 
-                            filesName k(nameOfFile,dirNode);
-                            return k;
+                    return k;
                 }
                 filesName k ("",-1);
                 return k;
@@ -346,4 +347,11 @@ int server::checkMode(int & nrInode,int & mode)
             return 1;
     }
     return 0;
+}
+
+int & server::getNodeNumberByFD(int & fd)
+{
+        for(int i = 0; i < INODE_NAME_SIZE; ++i)
+            if(fs->descriprionTable[i].fileDescriptor == fd)
+                return fs->descriprionTable[i].nrInode;
 }

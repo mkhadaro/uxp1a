@@ -28,7 +28,6 @@ class server
         void work();
 
         int_l createFile(char *name, int type, int r, int w, int x);
-        int deleteFile(char name[NAME_SIZE], char path[PATH_SIZE][NAME_SIZE]);
         int_l writeToFile(int_l inodeNumber, int_l size);
 
         int findBlockNumber(double size);
@@ -59,6 +58,7 @@ class server
             int createDescription(int & nrInode,int & mode);
             int getInodeNumber(char *name,int TYP_INODE,int file_type);
             int checkMode(int & nrInode,int & mode);
+            int & getNodeNumberByFD(int & fd);
 
 };
 

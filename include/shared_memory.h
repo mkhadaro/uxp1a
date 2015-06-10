@@ -5,6 +5,7 @@
 //w implementacji systemu plikow
 #include <iostream>
 #include <map>
+
  //klucz do odwolan do pamieci wspoldz.
 
 #define MEMORY_KEY     1056
@@ -26,11 +27,12 @@
 #define READ 1
 #define WRITE 2
 
+//rodzaj pliku w odniesieniu do hierarchii
 #define CHILD 1
 #define PARENT_DIR 2
 
 #define NAME_SIZE 24
-#define PATH_SIZE 128
+
 #define EMPTY_ADDRESS 0xFFFFFFFFFFFFFFFF
 
 //stale dotyczace typow operacji
