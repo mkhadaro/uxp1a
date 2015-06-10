@@ -130,16 +130,14 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
     {
         if(root_inode->type == -1 && type_of_operation == CREATE)
         {
-            int_l nodeNumebr = findFreeInodeNumber();
+            int_l nodeNumber = findFreeInodeNumber();
             char *file =(char*) malloc(strlen(fileName)+1);
             memcpy(file, fileName, strlen(fileName));
             strcpy(file,fileName);
-            setNewInodeData(nodeNumebr,INODE_TYPE, 1, 1, 1,file);
-            setInodeBit(nodeNumebr, true);
-            setNewInodeData(nodeNumebr,INODE_TYPE, 1, 1, 1,fileName);
-            setInodeBit(nodeNumebr, true);
+            setNewInodeData(nodeNumber,INODE_TYPE, 1, 1, 1,file);
+            setInodeBit(nodeNumber, true);
         }
-        filesName k("",-1);
+        filesName k("",-2);
         return k;
     }
     int j = 0;
@@ -339,19 +337,37 @@ int server::checkMode(int & nrInode,int & mode)
     if(mode == READ)
     {
         if(node.r == 1)
-            return 1;
+            return 0;
     }
     if(mode == WRITE)
     {
         if(node.w == 1)
-            return 1;
+            return 0;
     }
-    return 0;
+    return -1;
 }
 
-int & server::getNodeNumberByFD(int & fd)
+int server::getNodeNumberByFD(int & fd)
 {
         for(int i = 0; i < INODE_NAME_SIZE; ++i)
+        {
             if(fs->descriprionTable[i].fileDescriptor == fd)
                 return fs->descriprionTable[i].nrInode;
+        }
+        return -1;
+}
+
+int server::close(int & fd)
+{
+    for(int i = 0; i < DESCRIPTION_TABLE_SIZE; ++i)
+    {
+        if(fs->descriprionTable[i].fileDescriptor == fd)
+        {
+            fs->descriprionTable[i].fileDescriptor = 0;
+            fs->descriprionTable[i].mode = 0;
+            fs->descriprionTable[i].nrInode = 0;
+            return 0;
+        }
+    }
+    return -1;
 }

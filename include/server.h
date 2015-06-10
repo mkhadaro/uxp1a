@@ -12,7 +12,7 @@
 #include <map>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h> 
+#include <fcntl.h>
 #include <unistd.h>
 
 
@@ -42,8 +42,13 @@ class server
         int simplefs_mkdir(char* name);
         int simplefs_unlink(char* name);
         int simplefs_open(char* name,int mode);
+        int close(int & fd);
 
         FileSystem* fs;
+
+        void showServerState();
+        void printFreeBlockBitmap();
+        void printFreeInodeBitmap();
 
         private:
             FileSystem* attachSegmentOfSharedMemory();
@@ -58,7 +63,7 @@ class server
             int createDescription(int & nrInode,int & mode);
             int getInodeNumber(char *name,int TYP_INODE,int file_type);
             int checkMode(int & nrInode,int & mode);
-            int & getNodeNumberByFD(int & fd);
+            int getNodeNumberByFD(int & fd);
 
 };
 

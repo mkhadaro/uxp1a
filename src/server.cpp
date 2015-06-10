@@ -41,7 +41,7 @@ server::~server()
   shmctl(pamiec_id, IPC_RMID, NULL);
 }
 
-void server::work() 
+void server::work()
 {
   char buf[128];
   int n = 0;
@@ -51,36 +51,44 @@ void server::work()
     int fd = open(SERVER_FIFO, O_RDONLY);
     n = read(fd, &req, sizeof(req));
     close(fd);
-    
-    if(n == 0)
-    {
-      // close(fd);
-      // open("server", O_RDONLY);
-      break;
-    }
 
+    if(n == 0)
+      break;
+
+    serverResponse res;
     switch(req.type)
     {
       case OPEN_ACT:
-        break;
+                    res.result = simplefs_open(req.path,req.mode);
+                    break;
       case UNLINK_ACT:
-        break;
+                    res.result = simplefs_unlink(req.path);
+                    break;
       case MKDIR_ACT:
-        simplefs_mkdir(req.path);
-        break;
+                    res.result = simplefs_mkdir(req.path);
+                    break;
       case CREATE_ACT:
-        break;
+                    res.result = createFile(req.path,TYPE_FILE,req.fd,req.size,req.mode);
+                    break;
       case READ_ACT:
-        break;
-      case WRITE_ACT:
-        break;
-      case LSEEK_ACT:
-        break;
 
+                    break;
+      case LSEEK_ACT:
+
+                    break;
+      case CLOSE:
+                    res.result = close(req.fd);
+                    break;
+      case WRITE_ACT:
+                    int nodeNumber = getNodeNumberByFD(req.fd);
+                    if((nodeNumber < 0) || (checkMode(nodeNumber,req.mode)))
+                        res.result = -1;
+                    else
+                        res.result = writeToFile(nodeNumber, req.size);
+                    break;
     }
     // TODO do debugowania
     printf("%s\n", req.path);
-    serverResponse res;
     strcpy(res.clientFifoId, req.clientFifoId);
     int clientfd = open(req.clientFifoId, O_WRONLY);
     write(clientfd, &res, sizeof(res));

@@ -19,7 +19,7 @@ int_l server::createFile(char *name , int type, int r, int w, int x)
 	setNewInodeData(nodeNumber, type, r, w, x,dirNodeAndFileName.first);
 	free(dirNodeAndFileName.first);//zwalniam pamięć przydzieloną na nazwę po rozbiorze sciężki z nazwą
     setInodeBit(nodeNumber, true);
-	return nodeNumber;
+	return 0;
 }
 
 int server::simplefs_mkdir(char* name)
@@ -30,6 +30,11 @@ int server::simplefs_mkdir(char* name)
     if(dirNodeAndFileName.second == -1)
     {
         printf("Błąd przy tworzeniu katalogu\n");
+        return -1;
+    }
+    if(dirNodeAndFileName.second == -2)
+    {
+        free(dirNodeAndFileName.first);//zwalniam pamięć przydzieloną na nazwę po rozbiorze sciężki z nazwą
         return -1;
     }
     // nr inode - do dalszego utworzenia nowego nr inode dla katalogu
@@ -120,17 +125,3 @@ int server::simplefs_open(char* name,int mode)
     return createDescription(inodeNumber,mode);
 }
 
-/*write
-
-int fd = simplefs_open(char* name,WRITE);
-int nodeNumebr =  getNodeNumberByFD(int & fd)
-if(checkMode(nodeNumber,WRITE) == 1)
-    write_to_file = (nodeNumber,len)
-*/
-
-/*interface READ
-int fd = implefs_open(char* name,READ);
-int nodeNumebr =  getNodeNumberByFD(int & fd)
-    if(checkMode(nodeNumber,READ) == 1)
-read
-*/

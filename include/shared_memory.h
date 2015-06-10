@@ -7,8 +7,8 @@
 #include <map>
 
  //klucz do odwolan do pamieci wspoldz.
-
 #define MEMORY_KEY     1057
+
 
 // Stale dotyczace systemu plikow
 #define INODE_COUNT 512
@@ -61,6 +61,7 @@ typedef struct
     int fileDescriptor;
     int nrInode;
     int mode;
+    int filePosition;
 }FileDescription;
 
 typedef struct

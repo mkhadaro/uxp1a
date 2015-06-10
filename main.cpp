@@ -41,7 +41,6 @@ void ls(server & server)
 int testCreateDir(server & server)
 {
     server.simplefs_mkdir("/");
-
     server.simplefs_mkdir("/root");
     server.simplefs_mkdir("/opt");
     server.simplefs_mkdir("/run");
@@ -74,35 +73,44 @@ int testOpenFile(server & server,char *name)
 
 int main(int argc,char** argv)
 {
-    server server;
-    testCreateDir(server);
-    ls(server);
-    testUnlink(server,"/root/abs");
-    ls(server);
-    server.simplefs_mkdir("/root/tut");
-    ls(server);
-    testOpenFile(server,"/root/tut");
-    testUnlink(server,"/root/tut");
-    ls(server);
-    testOpenFile(server,"/root");
-    /*
-	const char* clientStr = "c";
-	const char* serverStr = "s";
-	{
-		if(strcmp(argv[1], clientStr) == 0)
-		{
-			printf("klient\n");
-			client c;
-			interface i;
-			i.run(c);
-		}
-		if(strcmp(argv[1], serverStr) == 0)
-		{
-			printf("server\n");
-			server s;
-			s.work();
-		}
-	}
-	*/
+
+    // server server;
+    // testCreateDir(server);
+    // ls(server);
+    // testUnlink(server);
+    // ls(server);
+    // server.simplefs_mkdir("/");
+    // ls(server);
+
+    if(argc == 2)
+    {
+    	const char* clientStr = "c";
+    	const char* serverStr = "s";
+    	{
+    		if(strcmp(argv[1], clientStr) == 0)
+    		{
+    			printf("klient\n");
+    			client c;
+    			interface i;
+    			i.run(c);
+    		}
+    		if(strcmp(argv[1], serverStr) == 0)
+    		{
+    			printf("server\n");
+    			server s;
+    			s.work();
+    		}
+    	}
+    }
+    else if (argc == 1)
+    {
+        server s;
+        s.simplefs_mkdir("/");
+        s.simplefs_mkdir("/root");
+        s.simplefs_mkdir("/adf");
+        s.createFile("/adf/sdf1", TYPE_FILE, 1, 1, 1);
+        //s.showServerState();
+        ls(s);
+    }
     return 0;
 }

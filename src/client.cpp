@@ -20,13 +20,13 @@ client::~client()
 	unlink(clientFifoId);
 }
 
-serverResponse client::sendRequest(int type, char path[128], int_l inodeNumber, int_l size, int mode)
+serverResponse client::sendRequest(int type, char *path, int fd, int_l size, int mode)
 {
 	clientRequest req;
 	strcpy(req.clientFifoId, clientFifoId);
 	req.type = type;
 	strcpy(req.path, path);
-	req.inodeNumber = inodeNumber;
+	req.fd = fd;
 	req.size = size;
 	req.mode = mode;
 
@@ -50,48 +50,65 @@ serverResponse client::sendRequest(int type, char path[128], int_l inodeNumber, 
 
 void client::simplefs_open(char* name,int mode)
 {
-    //
+    serverResponse response = sendRequest(OPEN_ACT, name, 0, 0, mode);
+    if(response.result < 0)
+        fileDescription = -1;
+    else
+        fileDescription = response.fd;
+
 }
+
 void client::simplefs_unlink(char* name)
 {
-
+    serverResponse response = sendRequest(UNLINK_ACT, name, 0, 0, 0);
+    if(response.result < 0)
+        printf("Blad pzry usuwaniu pliku");
 }
+
 void client::simplefs_mkdir(char* path)
 {
-	sendRequest(MKDIR_ACT, path, 0, 0, 0);
+	serverResponse response = sendRequest(MKDIR_ACT, path, 0, 0, 0);
+    if(response.result < 0)
+        printf("Blad przytworzeniu katalogu");
 }
-void client::simplefs_create(char* name,int mode)
+
+void client::simplefs_create(char* name,int r, int w, int x)
 {
+    serverResponse response = sendRequest(CREATE_ACT, name, r, w, x);
+    if(response.result < 0)
+        printf("Blad przytworzeniu pliku");
 
 }
+
 void client::simplefs_read(int fd,char* buf,int len)
 {
-
+    serverResponse response = sendRequest(READ_ACT, "", fd, len, READ);
+    if(response.result < 0)
+        return;
+    //fs->dataBlocks[response.result] = buf;
+    //
+    sendRequest(CLOSE, "", fd, 0, 0);
 }
+
 void client::simplefs_write(int fd,char* buf,int len)
 {
-    //TODO
-    //wyslanie wiadomosci do serwera
+    serverResponse response = sendRequest(WRITE_ACT, "", fd, len, WRITE);
+    if(response.result < 0)
+        return;
+    for(int i = 0;i < strlen(buf); ++i)
+        fs->dataBlocks[response.result + i ] = buf[i];
 
-
-    // int fd = simplefs_open(name, WRITE);
-    // int pamiec_id = shmget(MEMORY_KEY, sizeof(FileSystem), 0);
-    // shared_memory = attachSegmentOfSharedMemory();
-
-    // int written_bytes = write(fd, buffer, len);
-    // if (written_bytes == -1)
-    // {
-    //     printf("Nie zapisano");
-    // }
-    // close(fd);
-    // return written_bytes;
-
-
-
+    sendRequest(CLOSE, "", fd, 0, 0);
 }
+
 void client::simplefs_lseek(int fd,int whence,int offset)
 {
+    serverResponse response = sendRequest(LSEEK_ACT, "", fd, whence, offset);
+}
 
+void client::close_file(int fd)
+{
+    serverResponse response = sendRequest(CLOSE, "", fd, 0, 0);
 }
 
 void client::simplefs_list(char* path)
