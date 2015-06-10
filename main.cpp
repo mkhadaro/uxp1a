@@ -109,6 +109,8 @@ int main(int argc,char** argv)
         s.simplefs_mkdir("/root");
         s.simplefs_mkdir("/adf");
         s.createFile("/adf/sdf1", TYPE_FILE, 1, 1, 1);
+        s.createFile("/adf/sdf2", TYPE_FILE, 1, 1, 1);
+        s.simplefs_unlink("/adf/sdf1");
         s.showServerState();
         ls(s);
     }
@@ -131,22 +133,4 @@ int main(int argc,char** argv)
     ls(server);
     testOpenFile(server,"/root");
     */
-	const char* clientStr = "c";
-	const char* serverStr = "s";
-	{
-		if(strcmp(argv[1], clientStr) == 0)
-		{
-			printf("klient\n");
-			client c;
-			interface i;
-			i.run(c);
-		}
-		if(strcmp(argv[1], serverStr) == 0)
-		{
-			printf("server\n");
-			server s;
-			s.work();
-		}
-	}
-    return 0;
 }

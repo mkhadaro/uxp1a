@@ -48,25 +48,25 @@ serverResponse client::sendRequest(int type, char path[128], int_l inodeNumber, 
 	return res;
 }
 
-void client::simplefs_open(char* name,int mode)
+void client::simplefs_open(char* path,int mode)
 {
-    //
+    sendRequest(OPEN_ACT, path, 0, 0, 0);
 }
-void client::simplefs_unlink(char* name)
+void client::simplefs_unlink(char* path)
 {
-
+    sendRequest(UNLINK_ACT, path, 0, 0, 0);
 }
 void client::simplefs_mkdir(char* path)
 {
 	sendRequest(MKDIR_ACT, path, 0, 0, 0);
 }
-void client::simplefs_create(char* name,int mode)
+void client::simplefs_create(char* path,int mode)
 {
-
+    sendRequest(CREATE_ACT, path, 0, 0, 0);
 }
 void client::simplefs_read(int fd,char* buf,int len)
 {
-
+    sendRequest(READ_ACT, buf, 0, 0, 0);
 }
 void client::simplefs_write(int fd,char* buf,int len)
 {

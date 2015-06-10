@@ -136,8 +136,6 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
             strcpy(file,fileName);
             setNewInodeData(nodeNumebr,INODE_TYPE, 1, 1, 1,file);
             setInodeBit(nodeNumebr, true);
-            setNewInodeData(nodeNumebr,INODE_TYPE, 1, 1, 1,fileName);
-            setInodeBit(nodeNumebr, true);
         }
         filesName k("",-1);
         return k;
