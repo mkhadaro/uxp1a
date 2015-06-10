@@ -39,6 +39,7 @@ class client
 
         private:
             int fileDescription;
+
 };
 
 #endif // CLIENT_H

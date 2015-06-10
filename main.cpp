@@ -58,7 +58,8 @@ int testCreateDir(server & server)
     server.createFile("/root/tut",TYPE_FILE, 1, 1, 1);
     server.createFile("/root/abs",TYPE_FILE, 1, 1, 1);
     server.simplefs_mkdir("/root/home");
-    server.simplefs_mkdir("/r/abs/k");
+    server.simplefs_mkdir("/root/home/ala");
+
 }
 
 int testUnlink(server & server,char *nazwa)
@@ -70,19 +71,19 @@ int testOpenFile(server & server,char *name)
 {
     std::cout<<"file description "<<server.simplefs_open(name,READ)<<std::endl;
 }
-
 int main(int argc,char** argv)
 {
-/*
     server server;
     testCreateDir(server);
     ls(server);
-    //testUnlink(server,"/root/abs");
-    // ls(server);
+    testUnlink(server,"/root/abs");
+    ls(server);
+    //showFilesTree("/root",server);
     //server.simplefs_mkdir("/");
     //server.simplefs_mkdir("/root");
+    //show(0,server);
     //ls(server);
-*/
+/*
     if(argc == 2)
     {
     	const char* clientStr = "c";
@@ -112,7 +113,7 @@ int main(int argc,char** argv)
         s.createFile("/adf/sdf1", TYPE_FILE, 1, 1, 1);
         //s.showServerState();
         ls(s);
-    }
+    }*/
     return 0;
 
 }

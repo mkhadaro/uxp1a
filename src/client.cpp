@@ -1,4 +1,5 @@
 #include "../include/client.h"
+#include "../include/server.h"
 #include <iostream>
 #include <string.h>
 #include <sys/ipc.h>
@@ -84,8 +85,9 @@ void client::simplefs_read(int fd,char* buf,int len)
     serverResponse response = sendRequest(READ_ACT, "", fd, len, READ);
     if(response.result < 0)
         return;
-    //fs->dataBlocks[response.result] = buf;
-    //
+    for(int i = 0;i < len; ++i)
+        buf[i] = fs->dataBlocks[response.result + i ];
+
     sendRequest(CLOSE, "", fd, 0, 0);
 }
 
@@ -102,7 +104,7 @@ void client::simplefs_write(int fd,char* buf,int len)
 
 void client::simplefs_lseek(int fd,int whence,int offset)
 {
-    serverResponse response = sendRequest(LSEEK_ACT, "", fd, whence, offset);
+    serverResponse response = sendRequest(LSEEK_ACT, "", fd, offset, whence);
 }
 
 void client::close_file(int fd)

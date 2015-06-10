@@ -26,7 +26,6 @@ int server::simplefs_mkdir(char* name)
 {
     //zwraca strukturę z nr Inode katalogu nadrzędnego oraz nazwa pliku do utworzenia po rozbiorze slowa wejsciowego
     filesName dirNodeAndFileName = checkName(name,TYPE_DIR,CREATE);
-
     if(dirNodeAndFileName.second == -1)
     {
         return -1;

@@ -72,10 +72,10 @@ void server::work()
                     result = createFile(req.path,TYPE_FILE,req.fd,req.size,req.mode);
                     break;
       case READ_ACT:
-
+                    result = simplefs_read(req.fd,req.size);
                     break;
       case LSEEK_ACT:
-
+                    result = simplefs_lseek(req.fd,req.type,req.size);
                     break;
       case CLOSE:
                     result = close(req.fd);

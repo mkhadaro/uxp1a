@@ -261,7 +261,7 @@ int server::updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE)
 {
     INode* inode = &(fs->inodes[fileStruct.second]);//get dirInode
 
-    for(int i = 0; i < sizeof(inode->pointers)/sizeof(int) ; ++i)
+    for(int i = 0; i < 8; ++i)
     {
         if(strcmp(fs->inodes[inode->pointers[i]].name , fileStruct.first) == 0)
         {
@@ -284,7 +284,7 @@ int server::updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE)
 
 int server::checkValueInMap(int *maps,char* value,int TYP_INODE)
 {
-    for(int i = 0; i < sizeof(maps)/sizeof(int) ; ++i)
+    for(int i = 0; i < 8 ; ++i)
     {
         if(strcmp(fs->inodes[maps[i]].name , value) == 0)
         {
@@ -366,6 +366,16 @@ int server::getNodeNumberByFD(int & fd)
         return -1;
 }
 
+int server::getFilePositionByFD(int & fd)
+{
+        for(int i = 0; i < INODE_NAME_SIZE; ++i)
+        {
+            if(fs->descriprionTable[i].fileDescriptor == fd)
+                return fs->descriprionTable[i].filePosition;
+        }
+        return -1;
+}
+
 int server::close(int & fd)
 {
     for(int i = 0; i < DESCRIPTION_TABLE_SIZE; ++i)
@@ -379,4 +389,51 @@ int server::close(int & fd)
         }
     }
     return -1;
+}
+
+// fd - deskryptor pliku,whence - liczba, której znaczenie zależy od wartości trzeciego parametru - trybu zmiany położenia w pliku.
+/*
+nowa pozycja jest pozycja bezwzględna, czyli liczona od poczatku pliku.
+nowa pozycja jest liczona względem aktualnej pozycji w pliku.
+nowa pozycja jest liczona względem końca pliku.
+*/
+int server::simplefs_lseek(int fd,int whence,int len)
+{
+    int filePosition = getFilePositionByFD(fd);
+    if(filePosition == -1)
+        return -1;
+    int nodeNumber = getNodeNumberByFD(fd);
+    if(nodeNumber == -1)
+        return -1;
+    if(whence == ACTUAL_POSITION)
+    {
+        if(filePosition + len > fs->inodes[nodeNumber].size)//gdy "bieżąca pozycja" przekroczy koniec pliku, to read() zwraca 0
+            return -1;
+        filePosition += len;
+    }
+    if(whence == END_POSITION)
+    {
+        if(fs->inodes[nodeNumber].size - len < 0)
+            return -1;
+        filePosition += fs->inodes[nodeNumber].size - len;
+    }
+    if(whence == START_POSITION)
+    {
+        if(len > fs->inodes[nodeNumber].size)
+            return -1;
+        filePosition = len;
+    }
+    fs->descriprionTable[fd - 1].filePosition = filePosition;
+    return filePosition;
+}
+
+int server::simplefs_read(int fd,int len)
+{
+    int filePosition = simplefs_lseek(fd,ACTUAL_POSITION,len);
+    if(lseek < 0)
+        return -1;
+    int nodeNumber = getNodeNumberByFD(fd);
+    if(nodeNumber == -1)
+        return -1;
+    return fs->inodes[nodeNumber].address + filePosition;//zwracam adres pod ktorym czytam dane
 }
