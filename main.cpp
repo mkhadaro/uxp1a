@@ -73,6 +73,7 @@ int testOpenFile(server & server,char *name)
 
 int main(int argc,char** argv)
 {
+/*
     server server;
     testCreateDir(server);
     ls(server);
@@ -81,7 +82,7 @@ int main(int argc,char** argv)
     //server.simplefs_mkdir("/");
     //server.simplefs_mkdir("/root");
     //ls(server);
-/*
+*/
     if(argc == 2)
     {
     	const char* clientStr = "c";
@@ -113,5 +114,5 @@ int main(int argc,char** argv)
         ls(s);
     }
     return 0;
-    */
+
 }

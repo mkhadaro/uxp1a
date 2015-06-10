@@ -136,9 +136,10 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
             char *file =(char*) malloc(strlen(fileName)+1);
             memcpy(file, fileName, strlen(fileName));
             strcpy(file,fileName);
-
             setNewInodeData(nodeNumber,INODE_TYPE, 1, 1, 1,file);
             setInodeBit(nodeNumber, true);
+            filesName k(file,-2);
+            return k;
         }
         filesName k("",-1);
         return k;

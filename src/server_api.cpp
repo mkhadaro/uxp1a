@@ -29,7 +29,6 @@ int server::simplefs_mkdir(char* name)
 
     if(dirNodeAndFileName.second == -1)
     {
-        printf("Błąd przy tworzeniu katalogu\n");
         return -1;
     }
     if(dirNodeAndFileName.second == -2)

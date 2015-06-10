@@ -19,6 +19,7 @@ void server::printFreeBlockBitmap()
  				printf("%s", "1");
  			else
  				printf("%s", "0");
+ 			check >>= 1;
  		}
  		printf(" ");
  		if(i % 4 == 3)
@@ -39,6 +40,7 @@ void server::printFreeInodeBitmap()
  				printf("%s", "1");
  			else
  				printf("%s", "0");
+ 			check >>= 1;
  		}
  		printf(" ");
  		if(i % 4 == 3)

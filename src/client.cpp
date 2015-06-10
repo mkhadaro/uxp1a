@@ -48,14 +48,13 @@ serverResponse client::sendRequest(int type, char *path, int fd, int_l size, int
 	return res;
 }
 
-void client::simplefs_open(char* name,int mode)
+void client::simplefs_open(char* path,int mode)
 {
-    serverResponse response = sendRequest(OPEN_ACT, name, 0, 0, mode);
+    serverResponse response = sendRequest(OPEN_ACT, path, 0, 0, mode);
     if(response.result < 0)
         fileDescription = -1;
     else
         fileDescription = response.fd;
-
 }
 
 void client::simplefs_unlink(char* name)
@@ -77,7 +76,6 @@ void client::simplefs_create(char* name,int r, int w, int x)
     serverResponse response = sendRequest(CREATE_ACT, name, r, w, x);
     if(response.result < 0)
         printf("Blad przytworzeniu pliku");
-
 }
 
 void client::simplefs_read(int fd,char* buf,int len)
