@@ -1,10 +1,12 @@
 #include <iostream>
-#include "include/server.h"
 #include "include/shared_memory.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <set>
+
+#include "include/server.h"
+#include "include/client.h"
 
 using namespace std;
 
@@ -68,7 +70,7 @@ int testUnlink(server & server)
     server.simplefs_unlink(wskaznik);
 }
 
-int main(int arc,char** argv)
+int main(int argc,char** argv)
 {
     server server;
     testCreateDir(server);
@@ -77,7 +79,27 @@ int main(int arc,char** argv)
     ls(server);
     server.simplefs_mkdir("/root/home");
     ls(server);
+    
+	const char* clientStr = "c";
+	const char* serverStr = "s";
+	{
+		if(strcmp(argv[1], clientStr) == 0) 
+		{
+			printf("klient\n");
+			client c;
+			char tmp[128];
+			strcpy(tmp, "ahoj");
+			// c.sendRequest(0,tmp, 0, 0, 0);
+		}
+		if(strcmp(argv[1], serverStr) == 0)
+		{
+			printf("server\n");
+			server s;
+			// s.work();
+		}
+	}
 
+    // testCreateDir(server);
     //server.setBlockBit(0, 7, true);
     //server.setBlockBit(12, 7, true);
     //bool inode = server.canAddToFile(7, 5);

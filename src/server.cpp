@@ -23,6 +23,7 @@ server::server()
         fs->inodes[i].type = -1;
     }
 
+    mkfifo(SERVER_FIFO, 0666);
 }
 
 server::~server()
@@ -37,6 +38,52 @@ server::~server()
   }
   //zwalnianie pamięci współdzielonej
   shmctl(pamiec_id, IPC_RMID, NULL);
+}
+
+void server::work() 
+{
+  char buf[128];
+  int n = 0;
+  while(true)
+  {
+    clientRequest req;
+    int fd = open(SERVER_FIFO, O_RDONLY);
+    n = read(fd, &req, sizeof(req));
+    close(fd);
+    
+    if(n == 0)
+    {
+      // close(fd);
+      // open("server", O_RDONLY);
+      break;
+    }
+
+    switch(req.type)
+    {
+      case OPEN_ACT:
+        break;
+      case UNLINK_ACT:
+        break;
+      case MKDIR_ACT:
+        break;
+      case CREATE_ACT:
+        break;
+      case READ_ACT:
+        break;
+      case WRITE_ACT:
+        break;
+      case LSEEK_ACT:
+        break;
+
+    }
+    // TODO do debugowania
+    printf("%s\n", req.path);
+    serverResponse res;
+    strcpy(res.clientFifoId, req.clientFifoId);
+    int clientfd = open(req.clientFifoId, O_WRONLY);
+    write(clientfd, &res, sizeof(res));
+    close(clientfd);
+  }
 }
 
 FileSystem* server::attachSegmentOfSharedMemory()
