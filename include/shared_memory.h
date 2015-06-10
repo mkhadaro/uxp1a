@@ -9,6 +9,7 @@ w implementacji systemu plikow
 
 #include "constant_definitions.h"
 
+
 /** struktura opisujaca inode
     zawiera - nazwe
 */

@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../include/interface.h"
-#include "../include/communication.h"
+#include "../../include/interface.h"
+#include "../../include/communication.h"
 
 using namespace std;
 

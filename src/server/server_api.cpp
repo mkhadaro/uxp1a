@@ -1,4 +1,4 @@
-#include "../include/server.h"
+#include "../../include/server.h"
 
 int_l server::createFile(char *name , int type, int r, int w, int x)
 {

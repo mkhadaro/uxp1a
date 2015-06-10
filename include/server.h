@@ -1,22 +1,28 @@
+/**
+<--Opis pliku -->
+Plik naglowkowy zawiera definicje
+klasy serwera
+**/
+
 #ifndef SERVER_H
 #define SERVER_H
 
 #include "../include/shared_memory.h"
+
 #include <stdio.h>
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
-#include "../include/communication.h"
-
-#include <iostream>
-#include <map>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 
 
-//struktura opakowujaca nazwe pliku do utworzenia lub usuniecia oraz katalog nadrzedny
+/**
+struktura pomocnicza opakowujaca
+1) char*    -- nazwe pliku do utworzenia/usuniecia po rozbiorze sciezki na tokeny
+   int      -- oraz inode katalogu nadrzedny
+*/
 typedef std::pair<char*, int> filesName;
 
 class server
@@ -70,5 +76,4 @@ class server
             int getFilePositionByFD(int & fd);
 
 };
-
 #endif // SERVER_H
