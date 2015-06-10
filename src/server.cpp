@@ -81,8 +81,8 @@ void server::work()
                     result = close(req.fd);
                     break;
       case WRITE_ACT:
-                    int nodeNumber = getNodeNumberByFD(req.fd);
-                    if((nodeNumber < 0) || (checkMode(nodeNumber,req.mode)))
+                    int nodeNumber = getNodeNumberByFD(req.fd);//<--sprawdzam czy plik otwarty i zwracam inode- powiazany
+                    if((nodeNumber < 0) || (checkMode(nodeNumber,req.mode)))//sprawdzam uprawnienia
                         result = -1;
                     else
                         result = writeToFile(nodeNumber, req.size);

@@ -11,13 +11,13 @@
 
 #include "../include/communication.h"
 
-
 class client
 {
     public:
         client();
         ~client();
 
+        //API - blockbox
         void simplefs_open(char* name,int mode);
         void simplefs_unlink(char* name);
         void simplefs_mkdir(char* name);
@@ -28,7 +28,6 @@ class client
         void close_file(int fd);
         void simplefs_list(char* path);
 
-      // private:
         char clientFifoId[24];
         FileSystem* fs;
 
