@@ -7,6 +7,7 @@
 
 #include "include/server.h"
 #include "include/client.h"
+#include "include/interface.h"
 
 using namespace std;
 
@@ -72,13 +73,13 @@ int testUnlink(server & server)
 
 int main(int argc,char** argv)
 {
-    server server;
-    testCreateDir(server);
-    ls(server);
-    testUnlink(server);
-    ls(server);
-    server.simplefs_mkdir("/root/home");
-    ls(server);
+ //    server server;
+ //    testCreateDir(server);
+ //    ls(server);
+ //    testUnlink(server);
+ //    ls(server);
+ //    server.simplefs_mkdir("/root/home");
+ //    ls(server);
     
 	const char* clientStr = "c";
 	const char* serverStr = "s";
@@ -90,12 +91,14 @@ int main(int argc,char** argv)
 			char tmp[128];
 			strcpy(tmp, "ahoj");
 			// c.sendRequest(0,tmp, 0, 0, 0);
+			interface i;
+			i.run();
 		}
 		if(strcmp(argv[1], serverStr) == 0)
 		{
 			printf("server\n");
 			server s;
-			// s.work();
+			s.work();
 		}
 	}
 
@@ -104,6 +107,5 @@ int main(int argc,char** argv)
     //server.setBlockBit(12, 7, true);
     //bool inode = server.canAddToFile(7, 5);
     //printf(inode ? "true\n" : "false\n");
-
     return 0;
 }

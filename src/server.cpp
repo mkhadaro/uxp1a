@@ -65,6 +65,7 @@ void server::work()
       case UNLINK_ACT:
         break;
       case MKDIR_ACT:
+        simplefs_mkdir(req.path);
         break;
       case CREATE_ACT:
         break;

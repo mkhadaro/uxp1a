@@ -104,9 +104,9 @@ void client::simplefs_unlink(char* name)
 {
 
 }
-void client::simplefs_mkdir(char* name)
+void client::simplefs_mkdir(char* path)
 {
-
+	sendRequest(MKDIR_ACT, path, 0, 0, 0);
 }
 void client::simplefs_create(char* name,int mode)
 {
