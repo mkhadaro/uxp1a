@@ -4,6 +4,7 @@ void server::showServerState()
 {
 	printFreeBlockBitmap();
 	printFreeInodeBitmap();
+	printDirectories(0, 0);
 }
 
 void server::printFreeBlockBitmap()
@@ -45,5 +46,26 @@ void server::printFreeInodeBitmap()
  		printf(" ");
  		if(i % 4 == 3)
  			printf("\n");
+	}
+}
+
+void server::printDirectories(int_l inodeNumber, int depth)
+{
+	for(int i = 0; i < depth; i++)
+		printf("  ");
+	std::cout << fs->inodes[inodeNumber].name <<"\n";
+	for(int i = 0; i < sizeof(fs->inodes[inodeNumber].pointers)/sizeof(int); i++)
+	{
+		int pointedNumber = fs->inodes[inodeNumber].pointers[i];
+		if(pointedNumber == 0)
+			continue;
+		if(fs->inodes[pointedNumber].type == TYPE_DIR)
+			printDirectories(pointedNumber, depth + 1);
+		else
+		{
+			for(int j = 0; j < depth + 1; j++)
+				printf("  ");
+			std::cout << fs->inodes[pointedNumber].name << "\n";
+		}
 	}
 }

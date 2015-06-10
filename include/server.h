@@ -51,6 +51,7 @@ class server
         void showServerState();
         void printFreeBlockBitmap();
         void printFreeInodeBitmap();
+        void printDirectories(int_l inodeNumber, int depth);
         int getInodeNumber(char *name,int TYP_INODE,int file_type);
 
         private:

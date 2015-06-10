@@ -25,6 +25,7 @@ server::server()
         fs->descriprionTable[i].nrInode = -1;
 
     mkfifo(SERVER_FIFO, 0666);
+    simplefs_mkdir("/");
 }
 
 server::~server()

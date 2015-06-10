@@ -111,6 +111,9 @@ int main(int argc,char** argv)
         s.simplefs_mkdir("/root");
         s.simplefs_mkdir("/adf");
         s.createFile("/adf/sdf1", TYPE_FILE, 1, 1, 1);
+        s.createFile("/adf/sdf2", TYPE_FILE, 1, 1, 1);
+        s.createFile("/root/sdf2", TYPE_FILE, 1, 1, 1);
+        s.showServerState();
         //s.showServerState();
         ls(s);
     }*/
