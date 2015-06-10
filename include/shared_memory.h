@@ -8,7 +8,7 @@
 
  //klucz do odwolan do pamieci wspoldz.
 
-#define MEMORY_KEY     1056
+#define MEMORY_KEY     1057
 
 // Stale dotyczace systemu plikow
 #define INODE_COUNT 512

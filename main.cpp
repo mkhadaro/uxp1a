@@ -74,7 +74,6 @@ int testOpenFile(server & server,char *name)
 
 int main(int argc,char** argv)
 {
-    /*
     server server;
     testCreateDir(server);
     ls(server);
@@ -86,7 +85,7 @@ int main(int argc,char** argv)
     testUnlink(server,"/root/tut");
     ls(server);
     testOpenFile(server,"/root");
-    */
+    /*
 	const char* clientStr = "c";
 	const char* serverStr = "s";
 	{
@@ -104,5 +103,6 @@ int main(int argc,char** argv)
 			s.work();
 		}
 	}
+	*/
     return 0;
 }
