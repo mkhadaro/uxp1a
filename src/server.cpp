@@ -55,20 +55,21 @@ void server::work()
     if(n == 0)
       break;
 
-    serverResponse res;
+    int result = -1;
     switch(req.type)
     {
       case OPEN_ACT:
-                    res.result = simplefs_open(req.path,req.mode);
+                    result = simplefs_open(req.path,req.mode);
                     break;
       case UNLINK_ACT:
-                    res.result = simplefs_unlink(req.path);
+                    result = simplefs_unlink(req.path);
                     break;
       case MKDIR_ACT:
-                    res.result = simplefs_mkdir(req.path);
+                    result = simplefs_mkdir(req.path);
+                    //std::cout<<req.type<<" "<<req.path<<" "<<req.clientFifoId<<" "<<result<<std::endl;
                     break;
       case CREATE_ACT:
-                    res.result = createFile(req.path,TYPE_FILE,req.fd,req.size,req.mode);
+                    result = createFile(req.path,TYPE_FILE,req.fd,req.size,req.mode);
                     break;
       case READ_ACT:
 
@@ -77,18 +78,20 @@ void server::work()
 
                     break;
       case CLOSE:
-                    res.result = close(req.fd);
+                    result = close(req.fd);
                     break;
       case WRITE_ACT:
                     int nodeNumber = getNodeNumberByFD(req.fd);
                     if((nodeNumber < 0) || (checkMode(nodeNumber,req.mode)))
-                        res.result = -1;
+                        result = -1;
                     else
-                        res.result = writeToFile(nodeNumber, req.size);
+                        result = writeToFile(nodeNumber, req.size);
                     break;
     }
     // TODO do debugowania
     printf("%s\n", req.path);
+    serverResponse res;
+    res.result = result;
     strcpy(res.clientFifoId, req.clientFifoId);
     int clientfd = open(req.clientFifoId, O_WRONLY);
     write(clientfd, &res, sizeof(res));

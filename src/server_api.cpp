@@ -34,7 +34,7 @@ int server::simplefs_mkdir(char* name)
     if(dirNodeAndFileName.second == -2)
     {
         free(dirNodeAndFileName.first);//zwalniam pamięć przydzieloną na nazwę po rozbiorze sciężki z nazwą
-        return -1;
+        return -2;
     }
     // nr inode - do dalszego utworzenia nowego nr inode dla katalogu
     int_l nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);

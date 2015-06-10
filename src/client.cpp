@@ -12,6 +12,7 @@ client::client()
 	strcat(clientFifoId, cpid);
 	mkfifo(clientFifoId, 0666);
 	fs = attachSegmentOfSharedMemory();
+	printf("client fifo id %s\n", clientFifoId);
 }
 
 client::~client()
@@ -24,6 +25,7 @@ serverResponse client::sendRequest(int type, char *path, int fd, int_l size, int
 {
 	clientRequest req;
 	strcpy(req.clientFifoId, clientFifoId);
+
 	req.type = type;
 	strcpy(req.path, path);
 	req.fd = fd;
@@ -39,7 +41,6 @@ serverResponse client::sendRequest(int type, char *path, int fd, int_l size, int
 	read(clientFd, &res, sizeof(res));
 	close(clientFd);
 
-	// TODO do debugowania
 	printf("%s\n", res.clientFifoId);
 
 	if(strcpy(res.clientFifoId, clientFifoId) != 0 || res.type != type)
@@ -67,7 +68,7 @@ void client::simplefs_unlink(char* name)
 void client::simplefs_mkdir(char* path)
 {
 	serverResponse response = sendRequest(MKDIR_ACT, path, 0, 0, 0);
-    if(response.result < 0)
+    if(response.result == -1)
         printf("Blad przytworzeniu katalogu");
 }
 
