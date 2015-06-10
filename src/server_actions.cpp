@@ -126,17 +126,26 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
     char fileName[16] = {0};
     fileName[ 0] = '/';
     INode* root_inode = &(fs->inodes[0]);
+
+
     if(strlen(name) == 1)
     {
         if(root_inode->type == -1 && type_of_operation == CREATE)
         {
-            int_l nodeNumebr = findFreeInodeNumber();
+            int_l nodeNumber = findFreeInodeNumber();
             char *file =(char*) malloc(strlen(fileName)+1);
             memcpy(file, fileName, strlen(fileName));
             strcpy(file,fileName);
-            setNewInodeData(nodeNumebr,INODE_TYPE, 1, 1, 1,file);
-            setInodeBit(nodeNumebr, true);
+            setNewInodeData(nodeNumber,INODE_TYPE, 1, 1, 1,file);
+            setInodeBit(nodeNumber, true);
+            filesName k(file,-2);
+            return k;
         }
+        filesName k("",-1);
+        return k;
+    }
+    if(root_inode->type == -1)
+    {
         filesName k("",-1);
         return k;
     }
@@ -252,7 +261,7 @@ int server::updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE)
 {
     INode* inode = &(fs->inodes[fileStruct.second]);//get dirInode
 
-    for(int i = 0; i < sizeof(inode->pointers)/sizeof(int) ; ++i)
+    for(int i = 0; i < 8; ++i)
     {
         if(strcmp(fs->inodes[inode->pointers[i]].name , fileStruct.first) == 0)
         {
@@ -275,7 +284,7 @@ int server::updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE)
 
 int server::checkValueInMap(int *maps,char* value,int TYP_INODE)
 {
-    for(int i = 0; i < sizeof(maps)/sizeof(int) ; ++i)
+    for(int i = 0; i < 8 ; ++i)
     {
         if(strcmp(fs->inodes[maps[i]].name , value) == 0)
         {
@@ -337,19 +346,47 @@ int server::checkMode(int & nrInode,int & mode)
     if(mode == READ)
     {
         if(node.r == 1)
-            return 1;
+            return 0;
     }
     if(mode == WRITE)
     {
         if(node.w == 1)
-            return 1;
+            return 0;
     }
-    return 0;
+    return -1;
 }
 
-int & server::getNodeNumberByFD(int & fd)
+int server::getNodeNumberByFD(int & fd)
 {
         for(int i = 0; i < INODE_NAME_SIZE; ++i)
+        {
             if(fs->descriprionTable[i].fileDescriptor == fd)
                 return fs->descriprionTable[i].nrInode;
+        }
+        return -1;
+}
+
+int server::getFilePositionByFD(int & fd)
+{
+        for(int i = 0; i < INODE_NAME_SIZE; ++i)
+        {
+            if(fs->descriprionTable[i].fileDescriptor == fd)
+                return fs->descriprionTable[i].filePosition;
+        }
+        return -1;
+}
+
+int server::close(int & fd)
+{
+    for(int i = 0; i < DESCRIPTION_TABLE_SIZE; ++i)
+    {
+        if(fs->descriprionTable[i].fileDescriptor == fd)
+        {
+            fs->descriprionTable[i].fileDescriptor = 0;
+            fs->descriprionTable[i].mode = 0;
+            fs->descriprionTable[i].nrInode = 0;
+            return 0;
+        }
+    }
+    return -1;
 }

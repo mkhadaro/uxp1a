@@ -12,7 +12,7 @@
 #include <map>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h> 
+#include <fcntl.h>
 #include <unistd.h>
 
 
@@ -42,6 +42,9 @@ class server
         int simplefs_mkdir(char* name);
         int simplefs_unlink(char* name);
         int simplefs_open(char* name,int mode);
+        int simplefs_read(int fd,int len);
+        int simplefs_lseek(int fd,int whence,int len);
+        int close(int & fd);
 
         FileSystem* fs;
 
@@ -49,6 +52,7 @@ class server
         void printFreeBlockBitmap();
         void printFreeInodeBitmap();
         void printDirectories(int_l inodeNumber, int depth);
+        int getInodeNumber(char *name,int TYP_INODE,int file_type);
 
         private:
             FileSystem* attachSegmentOfSharedMemory();
@@ -61,9 +65,9 @@ class server
             int updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE);
 
             int createDescription(int & nrInode,int & mode);
-            int getInodeNumber(char *name,int TYP_INODE,int file_type);
             int checkMode(int & nrInode,int & mode);
-            int & getNodeNumberByFD(int & fd);
+            int getNodeNumberByFD(int & fd);
+            int getFilePositionByFD(int & fd);
 
 };
 

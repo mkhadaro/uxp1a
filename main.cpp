@@ -41,7 +41,6 @@ void ls(server & server)
 int testCreateDir(server & server)
 {
     server.simplefs_mkdir("/");
-
     server.simplefs_mkdir("/root");
     server.simplefs_mkdir("/opt");
     server.simplefs_mkdir("/run");
@@ -59,7 +58,8 @@ int testCreateDir(server & server)
     server.createFile("/root/tut",TYPE_FILE, 1, 1, 1);
     server.createFile("/root/abs",TYPE_FILE, 1, 1, 1);
     server.simplefs_mkdir("/root/home");
-    server.simplefs_mkdir("/r/abs/k");
+    server.simplefs_mkdir("/root/home/ala");
+
 }
 
 int testUnlink(server & server,char *nazwa)
@@ -71,23 +71,25 @@ int testOpenFile(server & server,char *name)
 {
     std::cout<<"file description "<<server.simplefs_open(name,READ)<<std::endl;
 }
-
 int main(int argc,char** argv)
 {
-    // server server;
-    // testCreateDir(server);
-    // ls(server);
-    // testUnlink(server);
-    // ls(server);
-    // server.simplefs_mkdir("/");
-    // ls(server);
-    
+    server server;
+    testCreateDir(server);
+    ls(server);
+    testUnlink(server,"/root/abs");
+    ls(server);
+    //showFilesTree("/root",server);
+    //server.simplefs_mkdir("/");
+    //server.simplefs_mkdir("/root");
+    //show(0,server);
+    //ls(server);
+/*
     if(argc == 2)
     {
     	const char* clientStr = "c";
     	const char* serverStr = "s";
     	{
-    		if(strcmp(argv[1], clientStr) == 0) 
+    		if(strcmp(argv[1], clientStr) == 0)
     		{
     			printf("klient\n");
     			client c;
@@ -112,25 +114,9 @@ int main(int argc,char** argv)
         s.createFile("/adf/sdf2", TYPE_FILE, 1, 1, 1);
         s.createFile("/root/sdf2", TYPE_FILE, 1, 1, 1);
         s.showServerState();
+        //s.showServerState();
         ls(s);
-    }
+    }*/
+    return 0;
 
-    // testCreateDir(server);
-    //server.setBlockBit(0, 7, true);
-    //server.setBlockBit(12, 7, true);
-    //bool inode = server.canAddToFile(7, 5);
-    //printf(inode ? "true\n" : "false\n");
-    /*
-    server server;
-    testCreateDir(server);
-    ls(server);
-    testUnlink(server,"/root/abs");
-    ls(server);
-    server.simplefs_mkdir("/root/tut");
-    ls(server);
-    testOpenFile(server,"/root/tut");
-    testUnlink(server,"/root/tut");
-    ls(server);
-    testOpenFile(server,"/root");
-    */
 }

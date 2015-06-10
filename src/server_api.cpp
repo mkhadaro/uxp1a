@@ -19,18 +19,21 @@ int_l server::createFile(char *name , int type, int r, int w, int x)
 	setNewInodeData(nodeNumber, type, r, w, x,dirNodeAndFileName.first);
 	free(dirNodeAndFileName.first);//zwalniam pamięć przydzieloną na nazwę po rozbiorze sciężki z nazwą
     setInodeBit(nodeNumber, true);
-	return nodeNumber;
+	return 0;
 }
 
 int server::simplefs_mkdir(char* name)
 {
     //zwraca strukturę z nr Inode katalogu nadrzędnego oraz nazwa pliku do utworzenia po rozbiorze slowa wejsciowego
     filesName dirNodeAndFileName = checkName(name,TYPE_DIR,CREATE);
-
     if(dirNodeAndFileName.second == -1)
     {
-        printf("Błąd przy tworzeniu katalogu\n");
         return -1;
+    }
+    if(dirNodeAndFileName.second == -2)
+    {
+        free(dirNodeAndFileName.first);//zwalniam pamięć przydzieloną na nazwę po rozbiorze sciężki z nazwą
+        return -2;
     }
     // nr inode - do dalszego utworzenia nowego nr inode dla katalogu
     int_l nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);
@@ -120,17 +123,51 @@ int server::simplefs_open(char* name,int mode)
     return createDescription(inodeNumber,mode);
 }
 
-/*write
 
-int fd = simplefs_open(char* name,WRITE);
-int nodeNumebr =  getNodeNumberByFD(int & fd)
-if(checkMode(nodeNumber,WRITE) == 1)
-    write_to_file = (nodeNumber,len)
+// fd - deskryptor pliku,whence - liczba, której znaczenie zależy od wartości trzeciego parametru - trybu zmiany położenia w pliku.
+/*
+nowa pozycja jest pozycja bezwzględna, czyli liczona od poczatku pliku.
+nowa pozycja jest liczona względem aktualnej pozycji w pliku.
+nowa pozycja jest liczona względem końca pliku.
 */
+int server::simplefs_lseek(int fd,int whence,int len)
+{
+    int filePosition = getFilePositionByFD(fd);
+    if(filePosition == -1)
+        return -1;
+    int nodeNumber = getNodeNumberByFD(fd);
+    if(nodeNumber == -1)
+        return -1;
+    if(whence == ACTUAL_POSITION)
+    {
+        if(filePosition + len > fs->inodes[nodeNumber].size)//gdy "bieżąca pozycja" przekroczy koniec pliku, to read() zwraca 0
+            return -1;
+        filePosition += len;
+    }
+    if(whence == END_POSITION)
+    {
+        if(fs->inodes[nodeNumber].size - len < 0)
+            return -1;
+        filePosition += fs->inodes[nodeNumber].size - len;
+    }
+    if(whence == START_POSITION)
+    {
+        if(len > fs->inodes[nodeNumber].size)
+            return -1;
+        filePosition = len;
+    }
+    fs->descriprionTable[fd - 1].filePosition = filePosition;
+    return filePosition;
+}
 
-/*interface READ
-int fd = implefs_open(char* name,READ);
-int nodeNumebr =  getNodeNumberByFD(int & fd)
-    if(checkMode(nodeNumber,READ) == 1)
-read
-*/
+int server::simplefs_read(int fd,int len)
+{
+    int filePosition = simplefs_lseek(fd,ACTUAL_POSITION,len);
+    if(lseek < 0)
+        return -1;
+    int nodeNumber = getNodeNumberByFD(fd);
+    if(nodeNumber == -1)
+        return -1;
+    return fs->inodes[nodeNumber].address + filePosition;//zwracam adres pod ktorym czytam dane
+}
+
