@@ -65,6 +65,7 @@ int testCreateDir(server & server)
 int testUnlink(server & server,char *nazwa)
 {
     server.simplefs_unlink(nazwa);
+    return 0;
 }
 
 int testOpenFile(server & server,char *name)

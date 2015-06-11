@@ -7,8 +7,8 @@ klasy serwera
 #ifndef SERVER_H
 #define SERVER_H
 
-#include "../include/shared_memory.h"
-
+#include "shared_memory.h"
+#include "communication.h"
 #include <stdio.h>
 #include <iostream>
 #include <stdlib.h>
