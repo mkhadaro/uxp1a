@@ -1,9 +1,5 @@
 #include <iostream>
 #include "include/shared_memory.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <set>
 
 #include "include/tests.h"
 #include "include/server.h"
@@ -122,13 +118,14 @@ int main(int argc,char** argv)
     if(fd == -1)
         return -1;
 
-    /*
+
     char bufor[60] = {0};
-    int position = server.simplefs_read(fd,length);
+    int blockNumber = server.simplefs_read(fd,length);
+    if(blockNumber > 0)
     for(int i = 0;i < length; ++i)
-        bufor[i] = server.fs->dataBlocks[position + i ];
-    std::cout<<"zawartosc bufora "<<bufor<<std::endl;
-    */
+        bufor[i] = server.fs->dataBlocks[blockNumber + i ];
+    std::cout<<"\nzawartosc bufora "<<bufor<<std::endl;
+
 
     //ls(server.fs);
 

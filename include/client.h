@@ -45,7 +45,7 @@ class client
 
         FileSystem* fs;
 
-        private:
+        //private:
             int fileDescription;
             char clientFifoId[24];
 };

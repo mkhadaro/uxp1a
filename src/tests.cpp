@@ -1,4 +1,4 @@
-#include "../include/tests.h"
+//#include "../../include/tests.h"
 #include "../include/client.h"
 
 void test1()
