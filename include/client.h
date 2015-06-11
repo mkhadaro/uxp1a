@@ -43,10 +43,11 @@ class client
         FileSystem* attachSegmentOfSharedMemory();
         void detachSegmentOfSharedMemory(FileSystem* shared_memory);
 
+        FileSystem* fs;
+
         private:
             int fileDescription;
             char clientFifoId[24];
-            FileSystem* fs;
 };
 
 #endif // CLIENT_H

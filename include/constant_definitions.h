@@ -6,7 +6,7 @@ w implementacji systemu plikow
 **/
 
  /**klucz odwolan do pamieci wspoldzielonej*/
-#define MEMORY_KEY     1091
+#define MEMORY_KEY     1002
 
 /**Stale dotyczace systemu plikow --> struktury FileSystem*/
 #define INODE_COUNT 512

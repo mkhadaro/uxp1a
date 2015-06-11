@@ -340,7 +340,7 @@ int server::createDescription(int & nrInod,int & mode)
 /**
 Funkcja serwera,sprawdzająca
 */
-int server::checkMode(int & nrInode,int & mode)
+int server::checkMode(int & nrInode,int mode)
 {
     INode & node = fs->inodes[nrInode];
     if(mode == READ)
