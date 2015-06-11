@@ -59,7 +59,9 @@ class server
         void printFreeInodeBitmap();
         void printDirectories(int_l inodeNumber, int depth);
         int getInodeNumber(char *name,int TYP_INODE,int file_type);
+        int checkMode(int & nrInode,int mode);
 
+        int getNodeNumberByFD(int & fd);
         private:
             FileSystem* attachSegmentOfSharedMemory();
             void detachSegmentOfSharedMemory(FileSystem* shared_memory);
@@ -71,8 +73,8 @@ class server
             int updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE);
 
             int createDescription(int & nrInode,int & mode);
-            int checkMode(int & nrInode,int & mode);
-            int getNodeNumberByFD(int & fd);
+            //int checkMode(int & nrInode,int & mode);
+            //int getNodeNumberByFD(int & fd);
             int getFilePositionByFD(int & fd);
 
 };

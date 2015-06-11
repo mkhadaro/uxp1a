@@ -118,7 +118,7 @@ int server::simplefs_open(char* name,int mode)
     int inodeNumber = getInodeNumber(name,TYPE_FILE,CHILD);
     if(inodeNumber < 0)
         return -1;
-    if(checkMode(inodeNumber,mode) == 0)
+    if(checkMode(inodeNumber,mode) == -1)
         return -1;
     return createDescription(inodeNumber,mode);
 }
@@ -168,6 +168,6 @@ int server::simplefs_read(int fd,int len)
     int nodeNumber = getNodeNumberByFD(fd);
     if(nodeNumber == -1)
         return -1;
-    return fs->inodes[nodeNumber].address;//zwracam adres pod ktorym czytam dane
+    return fs->inodes[nodeNumber].address - fs->inodes[nodeNumber].size;//zwracam adres pod ktorym czytam dane
 }
 

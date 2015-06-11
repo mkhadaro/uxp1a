@@ -11,27 +11,27 @@
 
 using namespace std;
 
-void showFiles(server & server,INode *inode)
+void showFiles(FileSystem * fs,INode *inode)
 {
     for(int j =0; j < sizeof(inode->pointers)/sizeof(int); ++j)
     {
         std::cout<<inode->pointers[j]<<" ";
-        if(server.fs->inodes[inode->pointers[j]].type == TYPE_HELPER)
+        if(fs->inodes[inode->pointers[j]].type == TYPE_HELPER)
         {
                 std::cout<<"\n\t"<<"\t";
-                showFiles(server,&server.fs->inodes[inode->pointers[j]]);
+                showFiles(fs,&fs->inodes[inode->pointers[j]]);
         }
     }
 }
 
-void ls(server & server)
+void ls(FileSystem * fs)
 {
     for(int i = 0; i < INODE_COUNT ;++i)
     {
-        if(server.fs->inodes[i].type != -1)
+        if(fs->inodes[i].type != -1)
         {
-            std::cout<<server.fs->inodes[i].name <<"\t"<<i<<"\t";
-            showFiles(server,&server.fs->inodes[i]);
+            std::cout<<fs->inodes[i].name <<"\t"<<i<<"\t";
+            showFiles(fs,&fs->inodes[i]);
             std::cout<<endl;
         }
     }
@@ -72,19 +72,63 @@ int testOpenFile(server & server,char *name)
 {
     std::cout<<"file description "<<server.simplefs_open(name,READ)<<std::endl;
 }
+
+int testClient()
+{
+    client client;
+    client.simplefs_create("/opt/system",1,1,0);
+    client.simplefs_open("/opt/system",READ);
+    std::cout<<std::endl;
+    ls(client.fs);
+}
+
 int main(int argc,char** argv)
 {
     server server;
     testCreateDir(server);
-    ls(server);
+    ls(server.fs);
     testUnlink(server,"/root/abs");
-    ls(server);
-    //showFilesTree("/root",server);
-    //server.simplefs_mkdir("/");
-    //server.simplefs_mkdir("/root");
-    //show(0,server);
-    //ls(server);
-/*
+    ls(server.fs);
+
+    server.createFile("/opt/system",TYPE_FILE,1,1,0);
+
+    int fd = server.simplefs_open("/opt/system",WRITE);
+
+    if(fd == -1)
+        return -1;
+
+
+    int length = 10;
+    int nodeNumber = server.getNodeNumberByFD(fd);
+    char bufor2[10] = "kasialu";
+
+    if(server.checkMode(nodeNumber,WRITE) < 0)
+        return -1;
+
+    int positionToWrite = server.writeToFile(nodeNumber,length);
+    for(int i = 0;i < length; ++i)
+            server.fs->dataBlocks[positionToWrite + i] = bufor2[i];
+
+    server.close(fd);
+
+    std::cout<<"poczatek po zapisie ";
+    for(int i = 0;i < length; ++i)
+        std::cout<<server.fs->dataBlocks[positionToWrite + i ];
+
+    fd = server.simplefs_open("/opt/system",READ);
+    if(fd == -1)
+        return -1;
+
+    /*
+    char bufor[60] = {0};
+    int position = server.simplefs_read(fd,length);
+    for(int i = 0;i < length; ++i)
+        bufor[i] = server.fs->dataBlocks[position + i ];
+    std::cout<<"zawartosc bufora "<<bufor<<std::endl;
+    */
+
+    //ls(server.fs);
+/*,
     if(argc == 2)
     {
     	const char* clientStr = "c";

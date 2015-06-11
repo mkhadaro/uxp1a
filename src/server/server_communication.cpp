@@ -21,7 +21,9 @@ void server::work()
     n = read(fd, &req, sizeof(req));
     close(fd);
     if(n == 0)
+    {
       break;
+    }
     int result = -1;
     switch(req.type)
     {
