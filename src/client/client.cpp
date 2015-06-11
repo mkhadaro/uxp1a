@@ -40,7 +40,6 @@ serverResponse client::sendRequest(int type, char *path, int fd, int_l size, int
 	return res;
 }
 
-=======
 void client::simplefs_open(char* path,int mode)
 {
     serverResponse response = sendRequest(OPEN_ACT, path, 0, 0, mode);
