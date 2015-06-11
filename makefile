@@ -23,6 +23,8 @@ output.o: src/output.cpp
 	$(CC) $(CFALGS) src/output.cpp -c -o output.o
 tests.o: src/tests.cpp
 	$(CC) $(CFLAGS) src/tests.cpp -c -o tests.o
+server_communication.o: src/server/server_communication.cpp
+	$(CC) $(CFLAGS) src/server/server_communication.cpp -c -o server_communication.o
 clean:
 	rm -f *.o
 

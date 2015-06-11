@@ -39,7 +39,6 @@ serverResponse client::sendRequest(int type, char *path, int fd, int_l size, int
 
 	return res;
 }
-
 void client::close_file(int fd)
 {
     serverResponse response = sendRequest(CLOSE, "", fd, 0, 0);
