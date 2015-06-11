@@ -9,8 +9,6 @@ w implementacji systemu plikow
 
 #include "constant_definitions.h"
 
-<<<<<<< Updated upstream
-=======
  //klucz do odwolan do pamieci wspoldz.
 #define MEMORY_KEY 1062
 

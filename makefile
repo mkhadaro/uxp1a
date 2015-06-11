@@ -1,8 +1,8 @@
 CC = g++
 CFLAGS  = -g -Wall
 
-all: main.cpp main.o server.o server_actions.o server_api.o client.o interface.o output.o tests.o
-	$(CC) $(CFLAGS) main.o server.o server_actions.o server_api.o client.o interface.o output.o tests.o -o program
+all: main.cpp main.o server.o server_actions.o server_api.o client.o interface.o output.o tests.o server_communication.o
+	$(CC) $(CFLAGS) main.o server.o server_actions.o server_api.o client.o interface.o output.o tests.o server_communication.o -o program
 main.o: main.cpp
 	$(CC) $(CFLAGS) main.cpp -c -o main.o
 server.o: src/server/server.cpp
@@ -19,6 +19,8 @@ output.o: src/output.cpp
 	$(CC) $(CFALGS) src/output.cpp -c -o output.o
 tests.o: src/tests.cpp
 	$(CC) $(CFLAGS) src/tests.cpp -c -o tests.o
+server_communication.o: src/server/server_communication.cpp
+	$(CC) $(CFLAGS) src/server/server_communication.cpp -c -o server_communication.o
 clean:
 	rm -f *.o
 
