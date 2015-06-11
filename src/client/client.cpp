@@ -37,11 +37,6 @@ serverResponse client::sendRequest(int type, char *path, int fd, int_l size, int
 	read(clientFd, &res, sizeof(res));
 	close(clientFd);
 
-	printf("%s\n", res.clientFifoId);
-
-	if(strcpy(res.clientFifoId, clientFifoId) != 0 || res.type != type)
-		res.result = -5;
-
 	return res;
 }
 

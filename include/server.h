@@ -58,6 +58,7 @@ class server
         void printFreeBlockBitmap();
         void printFreeInodeBitmap();
         void printDirectories(int_l inodeNumber, int depth);
+        void printfFileDescriptors();
         int getInodeNumber(char *name,int TYP_INODE,int file_type);
         int checkMode(int & nrInode,int mode);
 

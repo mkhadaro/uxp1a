@@ -5,9 +5,11 @@
 #include <string.h>
 #include <set>
 
+#include "include/tests.h"
 #include "include/server.h"
 #include "include/client.h"
 #include "include/interface.h"
+
 
 using namespace std;
 
@@ -84,6 +86,7 @@ int testClient()
 
 int main(int argc,char** argv)
 {
+
     server server;
     testCreateDir(server);
     ls(server.fs);
@@ -128,40 +131,6 @@ int main(int argc,char** argv)
     */
 
     //ls(server.fs);
-/*,
-    if(argc == 2)
-    {
-    	const char* clientStr = "c";
-    	const char* serverStr = "s";
-    	{
-    		if(strcmp(argv[1], clientStr) == 0)
-    		{
-    			printf("klient\n");
-    			client c;
-    			interface i;
-    			i.run(c);
-    		}
-    		if(strcmp(argv[1], serverStr) == 0)
-    		{
-    			printf("server\n");
-    			server s;
-    			s.work();
-    		}
-    	}
-    }
-    else if (argc == 1)
-    {
-        server s;
-        s.simplefs_mkdir("/");
-        s.simplefs_mkdir("/root");
-        s.simplefs_mkdir("/adf");
-        s.createFile("/adf/sdf1", TYPE_FILE, 1, 1, 1);
-        s.createFile("/adf/sdf2", TYPE_FILE, 1, 1, 1);
-        s.createFile("/root/sdf2", TYPE_FILE, 1, 1, 1);
-        s.showServerState();
-        //s.showServerState();
-        ls(s);
-    }*/
-    return 0;
 
+    return 0;
 }
