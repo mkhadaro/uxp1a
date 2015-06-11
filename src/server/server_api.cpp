@@ -106,7 +106,6 @@ int_l server::writeToFile(int_l inodeNumber, int_l size)
         if(canAddToFile(startingBlock, blocksNeeded) == false)
             return -1;
     }
-
     fs->inodes[inodeNumber].address = inodeAddress;
     fs->inodes[inodeNumber].size = newSize;
     setBlockBit(startingBlock, blocksNeeded, true);
@@ -162,12 +161,15 @@ int server::simplefs_lseek(int fd,int whence,int len)
 
 int server::simplefs_read(int fd,int len)
 {
-    int filePosition = simplefs_lseek(fd,ACTUAL_POSITION,len);
-    if(lseek < 0)
+    int filePositionPrev = getFilePositionByFD(fd);
+    if(filePositionPrev == -1)
+        return -1;
+    int newFilePosition = simplefs_lseek(fd,ACTUAL_POSITION,len);
+    if(newFilePosition < 0)
         return -1;
     int nodeNumber = getNodeNumberByFD(fd);
     if(nodeNumber == -1)
         return -1;
-    return fs->inodes[nodeNumber].address;//zwracam nr bloku pod ktorym czytam dane
+    return fs->inodes[nodeNumber].address + filePositionPrev;//zwracam nr bloku pod ktorym czytam dane
 }
 

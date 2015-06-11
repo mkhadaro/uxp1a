@@ -96,7 +96,6 @@ int main(int argc,char** argv)
     if(fd == -1)
         return -1;
 
-
     int length = 10;
     int nodeNumber = server.getNodeNumberByFD(fd);
     char bufor2[10] = "kasialu";
@@ -105,29 +104,45 @@ int main(int argc,char** argv)
         return -1;
 
     int positionToWrite = server.writeToFile(nodeNumber,length);
+    if(positionToWrite != -1)
     for(int i = 0;i < length; ++i)
             server.fs->dataBlocks[positionToWrite + i] = bufor2[i];
 
-    server.close(fd);
-
-    std::cout<<"poczatek po zapisie ";
+    if(positionToWrite != -1)
     for(int i = 0;i < length; ++i)
         std::cout<<server.fs->dataBlocks[positionToWrite + i ];
 
+    positionToWrite = server.writeToFile(nodeNumber,length);
+
+    //<-------------------------------------------------------------->
+/*
+    if(positionToWrite != -1)
+    for(int i = 0; i < length; ++i)
+            server.fs->dataBlocks[positionToWrite + i] = bufor2[i];
+/*
+    std::cout<<"poczatek po zapisie 2";
+    for(int i = 0;i < length; ++i)
+        std::cout<<server.fs->dataBlocks[positionToWrite + i ];
+    */
+    // <-------------------------------------------------------------->
+    server.close(fd);
+/*
     fd = server.simplefs_open("/opt/system",READ);
     if(fd == -1)
         return -1;
 
-
     char bufor[60] = {0};
     int blockNumber = server.simplefs_read(fd,length);
-    if(blockNumber > 0)
+    if(blockNumber >= 0)
     for(int i = 0;i < length; ++i)
+    {
+        std::cout<<server.fs->dataBlocks[blockNumber + i ];
         bufor[i] = server.fs->dataBlocks[blockNumber + i ];
+    }
+
+    //for(int i = 0;i < length; ++i)
+        //std::cout<<server.fs->dataBlocks[blockNumber + i ];
     std::cout<<"\nzawartosc bufora "<<bufor<<std::endl;
-
-
-    //ls(server.fs);
-
+    */
     return 0;
 }
