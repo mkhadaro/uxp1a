@@ -168,6 +168,6 @@ int server::simplefs_read(int fd,int len)
     int nodeNumber = getNodeNumberByFD(fd);
     if(nodeNumber == -1)
         return -1;
-    return fs->inodes[nodeNumber].address + filePosition;//zwracam adres pod ktorym czytam dane
+    return fs->inodes[nodeNumber].address;//zwracam adres pod ktorym czytam dane
 }
 

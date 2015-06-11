@@ -337,7 +337,9 @@ int server::createDescription(int & nrInod,int & mode)
     return -1;
 }
 
-//funkcja sprawdza uprawnienia inode-a pod nrInode
+/**
+Funkcja serwera,sprawdzająca
+*/
 int server::checkMode(int & nrInode,int & mode)
 {
     INode & node = fs->inodes[nrInode];
