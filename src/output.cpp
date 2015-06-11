@@ -5,6 +5,7 @@ void server::showServerState()
 	printFreeBlockBitmap();
 	printFreeInodeBitmap();
 	printDirectories(0, 0);
+	printfFileDescriptors();
 }
 
 void server::printFreeBlockBitmap()
@@ -53,19 +54,44 @@ void server::printDirectories(int_l inodeNumber, int depth)
 {
 	for(int i = 0; i < depth; i++)
 		printf("  ");
-	std::cout << fs->inodes[inodeNumber].name <<"\n";
-	for(int i = 0; i < sizeof(fs->inodes[inodeNumber].pointers)/sizeof(int); i++)
+	std::cout << fs->inodes[inodeNumber].name << "\t\t\t" << fs->inodes[inodeNumber].type << "  ";
+	std::cout << fs->inodes[inodeNumber].size << "\n";
+	bool doWhile = true;
+
+	while(doWhile)
 	{
-		int pointedNumber = fs->inodes[inodeNumber].pointers[i];
-		if(pointedNumber == 0)
-			continue;
-		if(fs->inodes[pointedNumber].type == TYPE_DIR)
-			printDirectories(pointedNumber, depth + 1);
-		else
+		doWhile = false;	
+		for(int i = 0; i < sizeof(fs->inodes[inodeNumber].pointers)/sizeof(int); i++)
 		{
-			for(int j = 0; j < depth + 1; j++)
-				printf("  ");
-			std::cout << fs->inodes[pointedNumber].name << "\n";
+			int pointedNumber = fs->inodes[inodeNumber].pointers[i];
+			if(pointedNumber == 0)
+				continue;
+
+			if(fs->inodes[pointedNumber].type == TYPE_DIR)
+				printDirectories(pointedNumber, depth + 1);
+			else if(fs->inodes[pointedNumber].type == TYPE_HELPER)
+			{
+				doWhile = true;
+				inodeNumber = pointedNumber;
+			}
+			else
+			{
+				for(int j = 0; j < depth + 1; j++)
+					printf("  ");
+				std::cout << fs->inodes[pointedNumber].name <<"\t\t\t" << fs->inodes[pointedNumber].type << "  ";
+				std::cout << fs->inodes[pointedNumber].size << "\n";
+			}
 		}
+	}
+	
+}
+
+void server::printfFileDescriptors()
+{
+	for (int i = 0; i < DESCRIPTION_TABLE_SIZE; i++)
+	{
+		FileDescription fd = fs->descriprionTable[i];
+		if (fd.fileDescriptor != 0)
+			printf("%d  %d  %d  %d\n", fd.fileDescriptor, fd.nrInode, fd.mode, fd.filePosition);
 	}
 }

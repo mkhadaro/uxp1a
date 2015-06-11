@@ -5,9 +5,11 @@
 #include <string.h>
 #include <set>
 
+#include "include/tests.h"
 #include "include/server.h"
 #include "include/client.h"
 #include "include/interface.h"
+
 
 using namespace std;
 
@@ -74,21 +76,10 @@ int testOpenFile(server & server,char *name)
 }
 int main(int argc,char** argv)
 {
-    server server;
-    testCreateDir(server);
-    ls(server);
-    testUnlink(server,"/root/abs");
-    ls(server);
-    //showFilesTree("/root",server);
-    //server.simplefs_mkdir("/");
-    //server.simplefs_mkdir("/root");
-    //show(0,server);
-    //ls(server);
-/*
     if(argc == 2)
     {
-    	const char* clientStr = "c";
-    	const char* serverStr = "s";
+    	const char* clientStr = "client";
+    	const char* serverStr = "server";
     	{
     		if(strcmp(argv[1], clientStr) == 0)
     		{
@@ -97,27 +88,25 @@ int main(int argc,char** argv)
     			interface i;
     			i.run(c);
     		}
-    		if(strcmp(argv[1], serverStr) == 0)
+    		else if(strcmp(argv[1], serverStr) == 0)
     		{
     			printf("server\n");
     			server s;
     			s.work();
     		}
+            else if(strcmp(argv[1], "test1") == 0)
+            {
+                test1();
+            }
+            else if(strcmp(argv[1], "test2") == 0)
+            {
+                test2();
+            }
+            else if(strcmp(argv[1], "test3") == 0)
+            {
+                test3();
+            }
     	}
     }
-    else if (argc == 1)
-    {
-        server s;
-        s.simplefs_mkdir("/");
-        s.simplefs_mkdir("/root");
-        s.simplefs_mkdir("/adf");
-        s.createFile("/adf/sdf1", TYPE_FILE, 1, 1, 1);
-        s.createFile("/adf/sdf2", TYPE_FILE, 1, 1, 1);
-        s.createFile("/root/sdf2", TYPE_FILE, 1, 1, 1);
-        s.showServerState();
-        //s.showServerState();
-        ls(s);
-    }*/
     return 0;
-
 }

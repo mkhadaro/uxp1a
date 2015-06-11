@@ -11,6 +11,7 @@ typedef struct
 	int fd;         //r
 	int_l size;     //w
 	int mode;       //x
+	int tmp;
 } clientRequest;
 
 typedef struct
