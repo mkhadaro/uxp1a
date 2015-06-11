@@ -19,8 +19,8 @@ typedef struct inode
 	short int r;
 	short int w;
 	short int x;
-	double size;
-	double address;
+    int_l size;//rozmiar pliku
+	int_l address;//nr poczatkowego bloku
     int pointers[8];/***zawiera podrzędne nr inod-ow plików lub katalogów**/
 } INode;
 

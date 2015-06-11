@@ -24,10 +24,17 @@ server::server()
     fs = attachSegmentOfSharedMemory();
 
     for(int i =0; i< INODE_COUNT ; ++i)
+    {
         fs->inodes[i].type = -1;
+    }
 
     for(int i =0; i< DESCRIPTION_TABLE_SIZE ; ++i)
         fs->descriprionTable[i].nrInode = -1;
+
+    for(int i =0; i< DATA_BLOCK_COUNT*BLOCK_SIZE ; ++i)
+    {
+        fs->dataBlocks[i] = 0;
+    }
 
     mkfifo(SERVER_FIFO, 0666);
     simplefs_mkdir("/");

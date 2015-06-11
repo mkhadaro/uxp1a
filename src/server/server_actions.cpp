@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void server::setNewInodeData(int inodeNumber, int type, int r, int w, int x, char *name)
+void server::setNewInodeData(int inodeNumber, int type, int r, int w, int x, char *name,int adress)
 {
     strcpy(fs->inodes[inodeNumber].name , name);
 	fs->inodes[inodeNumber].type = type;
@@ -10,7 +10,10 @@ void server::setNewInodeData(int inodeNumber, int type, int r, int w, int x, cha
 	fs->inodes[inodeNumber].w = w;
 	fs->inodes[inodeNumber].x = x;
 	fs->inodes[inodeNumber].size = 0;
-	fs->inodes[inodeNumber].address = EMPTY_ADDRESS;
+	fs->inodes[inodeNumber].address = adress;
+	if(type == TYPE_FILE)
+	for(int i = 0 ; i < FILE_SIZE ; ++i)
+            fs->dataBlocks[i + adress] = 1;
 }
 
 int_l server::findFreeBlockNumber(int_l blocksNeeded)
@@ -19,7 +22,7 @@ int_l server::findFreeBlockNumber(int_l blocksNeeded)
  	bool previousFree = false;
  	int_l blockNumber = -1;
 
- 	for(int_l i = 0; i < BLOCK_COUNT / 8; i++)
+ 	for(int_l i = 0; i < BLOCK_COUNT / 8; ++i)
  	{
  		char check = fs->blockBitmap[i];
  		for(int j = 0; j < 8; j++)
@@ -65,26 +68,6 @@ void server::setBlockBit(int_l number, int_l amount, bool value)
 	}
 }
 
-bool server::canAddToFile(int_l startingBlock, int_l amount)
-{
-	int_l byteNumber = startingBlock / 8;
-	int_l bitNumber = startingBlock % 8;
-
-	while (amount > 0)
-	{
-		char bit = fs->blockBitmap[byteNumber] & (1 << bitNumber);
-		if (bit == (1 << bitNumber))
-			return false;
-
-		bitNumber++;
-		bitNumber %= 8;
-		if(bitNumber == 0)
-			byteNumber++;
-		amount--;
-	}
-	return true;
-}
-
 int_l server::findFreeInodeNumber()
 {
  	for(int_l i = 0; i < INODE_COUNT / 8; i++)
@@ -99,6 +82,40 @@ int_l server::findFreeInodeNumber()
  		}
  	}
  	return -1;
+}
+
+int server::searchFreeBlock(int size)
+{
+    int j = 0;
+    int indeks_bloku = 0;
+
+    for(int i = 0; i < DATA_BLOCK_COUNT*BLOCK_SIZE ; ++i)
+    {
+        if(j == size)
+            return i - 32;
+        if(fs->dataBlocks[i] == 0)
+        {
+            ++j;
+            indeks_bloku = i;
+        }
+        else
+        {
+            i += 31;
+            j = 0;
+            indeks_bloku = -1;
+        }
+    }
+    return -1;
+}
+
+void server::deleteBlock(int address,int size)
+{
+
+    for(int i = 0; i < size ; ++i)
+    {
+        fs->dataBlocks[address + i] = 0;
+    }
+    return;
 }
 
 void server::setInodeBit(int number, bool value)
@@ -134,7 +151,7 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
             char *file =(char*) malloc(strlen(fileName)+1);
             memcpy(file, fileName, strlen(fileName));
             strcpy(file,fileName);
-            setNewInodeData(nodeNumber,INODE_TYPE, 1, 1, 1,file);
+            setNewInodeData(nodeNumber,INODE_TYPE, 1, 1, 1,file,-1);
             setInodeBit(nodeNumber, true);
             filesName k(file,-2);
             return k;
@@ -180,6 +197,7 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
                 INode* inode = &(fs->inodes[nrInode]);
                 dirNode = nrInode;
                 nrInode = checkValueInMap(inode->pointers,fileName,INODE_TYPE);
+
                 //jesli nie znaleziony zostal taki nr-inode - >wychodzimy z petli,dla delete wysylamy blad a dla create - tworzymy inode
                 if(nrInode == -1)
                         break;
@@ -188,7 +206,7 @@ filesName server::checkName(char* name,int INODE_TYPE,int type_of_operation)
                 if(type_of_operation == CREATE && inode->type != INODE_TYPE)
                     break;
                 //jesli mamy operacje usuwania oraz mamy inode o podanym wyzej typie - zwracamy inode dira oraz nazwe pliku do usuniecia;
-                if(type_of_operation == DELETE && inode->type == INODE_TYPE)
+                if(type_of_operation == 1 && inode->type == INODE_TYPE)
                 {
                     char *nameOfFile =(char*) malloc(strlen(fileName)+1);
                     nameOfFile[strlen(fileName)] = 0;
@@ -236,7 +254,9 @@ int server::updateLinksMapAndCreateFile(int & dirNode)
             {
                     inode->pointers[i] = nodeNumber;//dowiązuje pomocniczy inode do tablicy inode-ow danego katalogu
                     //tworze pomocniczy inode,który będzie przechowywał dowiązania do kojenych nrInode,należących do katalogu
-                    setNewInodeData(nodeNumber, TYPE_HELPER, 1, 1, 1,"help");
+                    //setNewInodeData(nodeNumber, TYPE_HELPER, 1, 1, 1,"help",-1);
+                    //setInodeBit(nodeNumber, true);
+                    setNewInodeData(nodeNumber, TYPE_HELPER, 1, 1, 1, "help",-1);
                     setInodeBit(nodeNumber, true);
                     inode = &(fs->inodes[nodeNumber]);//pobieram inode helpera
                     return updateLinksMapAndCreateFile(nodeNumber);
@@ -248,12 +268,6 @@ int server::updateLinksMapAndCreateFile(int & dirNode)
     }
     return nodeNumber;
 }
-
-/**
-@args struktua - zawiera nr inode katalogu nadrzednego,w którym trzeba zrobic update na tablicy pointerów
-                    oraz nazwę pliku do update i dalszego usunięcia
-@return  return nr Inode do usuniecia
-*/
 
 int server::updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE)
 {
@@ -287,25 +301,15 @@ int server::checkValueInMap(int *maps,char* value,int TYP_INODE)
         if(strcmp(fs->inodes[maps[i]].name , value) == 0)
         {
            if(fs->inodes[maps[i]].type == TYP_INODE)
-                return maps[i];
+           {
+                return i = maps[i];
+           }
         }
         if(fs->inodes[maps[i]].type == TYPE_HELPER)
             checkValueInMap(fs->inodes[maps[i]].pointers,value,TYP_INODE);
     }
     return -1;
 }
-
-
-/**
-@args   maps - wskaznik na listę pointerów inode-a
-        value - nazwa pliku/katalogu
-        TYP_INODE - typ inode który musimy sprawdzić lub przy usunięciu TYP_INODE musimy być równy TYPE_FILE
-        type_of_operation - typ operacji - albo sprawdzanie czy dany plik/katalog nalezy do listy pointerów inode-a
-@return
-        IF type_of_operation == CHECK -> return nr Inode pod którym znalezliśmy dany obiekt typu TYP_INODE else -1
-        IF type_of_operation == DELETE -> ustawiamy w tablicy pointerów wskazanie na 0,return nr Inode
-*/
-
 
 int server::getInodeNumber(char *name,int TYP_INODE,int file_type)
 {
@@ -331,12 +335,12 @@ int server::createDescription(int & nrInod,int & mode)
             fs->descriprionTable[i].fileDescriptor = i + 1;
             fs->descriprionTable[i].mode = mode;
             fs->descriprionTable[i].nrInode = nrInod;
+            fs->descriprionTable[i].filePosition = 0;
             return fs->descriprionTable[i].fileDescriptor;
         }
     }
     return -1;
 }
-
 /**
 Funkcja serwera,sprawdzająca
 */

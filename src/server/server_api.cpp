@@ -1,6 +1,6 @@
 #include "../../include/server.h"
 
-int_l server::createFile(char *name , int type, int r, int w, int x)
+int server::createFile(char *name , int type, int r, int w, int x)
 {
     //zwraca struktura z nr Inode katalogu nadrzędnego oraz nazwa pliku do utworzenia po rozbiorze slowa wejsciowego
     filesName dirNodeAndFileName = checkName(name,type,CREATE);
@@ -10,15 +10,28 @@ int_l server::createFile(char *name , int type, int r, int w, int x)
         return -1;
     }
 
+    int adres_bloku_startowego = searchFreeBlock(FILE_SIZE);
+    adres_bloku_startowego = adres_bloku_startowego;
+    if(adres_bloku_startowego == -1)
+    {
+        printf("Błąd przy pobraniu adresu bloku\n");
+        return -1;
+    }
+
     int_l nodeNumber = updateLinksMapAndCreateFile(dirNodeAndFileName.second);
     if(nodeNumber == -1)
     {
         printf("Błąd przy utworzeniu pliku\n");
         return -1;
     }
-	setNewInodeData(nodeNumber, type, r, w, x,dirNodeAndFileName.first);
+
+	setNewInodeData(nodeNumber, type, r, w, x,dirNodeAndFileName.first,adres_bloku_startowego);
+
 	free(dirNodeAndFileName.first);//zwalniam pamięć przydzieloną na nazwę po rozbiorze sciężki z nazwą
     setInodeBit(nodeNumber, true);
+
+    int blockNumber = adres_bloku_startowego/BLOCK_SIZE;
+    fs->blockBitmap[blockNumber] = 1;
 	return 0;
 }
 
@@ -42,7 +55,7 @@ int server::simplefs_mkdir(char* name)
         printf("Błąd przy tworzeniu katalogu \n");
         return -1;
     }
-    setNewInodeData(nodeNumber, TYPE_DIR, 1, 1, 1,dirNodeAndFileName.first);
+    setNewInodeData(nodeNumber, TYPE_DIR, 1, 1, 1,dirNodeAndFileName.first,-1);
     free(dirNodeAndFileName.first);//zwalniam pamięć przydzieloną na nazwę po rozbiorze sciężki z nazwą
     setInodeBit(nodeNumber, true);
 
@@ -61,7 +74,6 @@ int server::simplefs_unlink(char* name)
         if(fs->descriprionTable[i].nrInode == inodeNumber)
             return -1;
 
-
     filesName dirNodeAndFileName = checkName(name,TYPE_FILE,GET_VALUE);
     if(dirNodeAndFileName.second == -1)
             return -1;
@@ -74,47 +86,44 @@ int server::simplefs_unlink(char* name)
     int_l inodeAddress = fs->inodes[inodeNumber].address;
     int_l inodeSize = fs->inodes[inodeNumber].size;
     int_l blocksAssigned = inodeSize / BLOCK_SIZE;
-    setBlockBit(inodeAddress, blocksAssigned, false);
-    setInodeBit(inodeNumber, false);
-    return 0;
+    deleteBlock(fs->inodes[inodeNumber].address,FILE_SIZE);
+    setInodeBit(inodeNumber,false);
 
+    int block = inodeAddress/BLOCK_SIZE;//ktory blok
+    int isData = true;
+    for(int i = block; i < (block + 1)*BLOCK_SIZE - 32; ++i)
+        if(fs->dataBlocks[i] == 0)
+        {
+            i+=32;
+        }
+        else
+        {
+            isData = false;
+            break;
+        }
+    if(isData == true)
+        fs->blockBitmap[block] = 0;
+    return 0;
 }
 
 int_l server::writeToFile(int_l inodeNumber, int_l size)
 {
-    int_l inodeAddress = fs->inodes[inodeNumber].address;
-    int_l inodeSize = fs->inodes[inodeNumber].size;
-    int_l blocksAssigned = inodeSize / BLOCK_SIZE;
-    int_l blocksNeeded;
-    int_l startingBlock;
-    int_l newSize;
-
-    if(inodeAddress == EMPTY_ADDRESS)
-    {
-        blocksNeeded = size / BLOCK_SIZE;
-        startingBlock = findFreeBlockNumber(blocksNeeded);
-        inodeAddress = startingBlock;
-        newSize = size;
-        if(startingBlock == -1)
-            return -1;
-    }
-    else
-    {
-        int_l newSize = inodeSize + size;
-        blocksNeeded = (newSize / BLOCK_SIZE) - blocksAssigned;
-        startingBlock = inodeAddress + blocksAssigned;
-        if(canAddToFile(startingBlock, blocksNeeded) == false)
-            return -1;
-    }
-    fs->inodes[inodeNumber].address = inodeAddress;
-    fs->inodes[inodeNumber].size = newSize;
-    setBlockBit(startingBlock, blocksNeeded, true);
-    return inodeSize;
+    int_l adressBlocku = fs->inodes[inodeNumber].address;
+    int actualSize = fs->inodes[inodeNumber].size;
+    if(actualSize + size > FILE_SIZE)
+        return -1;
+    fs->inodes[inodeNumber].size += size;//update rozmiaru pliku
+    return adressBlocku + actualSize;
 }
 
 int server::simplefs_open(char* name,int mode)
 {
-    int inodeNumber = getInodeNumber(name,TYPE_FILE,CHILD);
+    int inodeNumber = getInodeNumber(name,TYPE_FILE,CHILD);/*
+    filesName dirNodeAndFileName = checkName(name,TYPE_FILE,DELETE);
+    if(dirNodeAndFileName.second == -1)
+        return -1;
+    INode & node = fs->inodes[dirNodeAndFileName.second];
+    int inodeNumber =  checkValueInMap(node.pointers,dirNodeAndFileName.first,TYPE_FILE);*/
     if(inodeNumber < 0)
         return -1;
     if(checkMode(inodeNumber,mode) == -1)
@@ -137,6 +146,7 @@ int server::simplefs_lseek(int fd,int whence,int len)
     int nodeNumber = getNodeNumberByFD(fd);
     if(nodeNumber == -1)
         return -1;
+
     if(whence == ACTUAL_POSITION)
     {
         if(filePosition + len > fs->inodes[nodeNumber].size)//gdy "bieżąca pozycja" przekroczy koniec pliku, to read() zwraca 0
@@ -170,6 +180,5 @@ int server::simplefs_read(int fd,int len)
     int nodeNumber = getNodeNumberByFD(fd);
     if(nodeNumber == -1)
         return -1;
-    return fs->inodes[nodeNumber].address + filePositionPrev;//zwracam nr bloku pod ktorym czytam dane
+    return fs->inodes[nodeNumber].address + filePositionPrev;//zwracam adres bloku pod ktorym sa dane oraz wskazuje na aktualna pozycje pod ktorym czytam dane
 }
-

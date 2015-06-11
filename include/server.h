@@ -33,16 +33,15 @@ class server
 
         void work();
 
-        int_l createFile(char *name, int type, int r, int w, int x);
+        int createFile(char *name, int type, int r, int w, int x);
         int_l writeToFile(int_l inodeNumber, int_l size);
 
         int findBlockNumber(double size);
         int_l findFreeBlockNumber(int_l blocksNeeded);
         void setBlockBit(int_l number, int_l amount, bool value);
-        bool canAddToFile(int_l startingBlock, int_l amount);
 
         int_l findFreeInodeNumber();
-        void setNewInodeData(int inodeNumber, int type, int r, int w, int x,char* name);
+        void setNewInodeData(int inodeNumber, int type, int r, int w, int x,char* name,int adress);
         void setInodeBit(int number, bool value);
 
         int simplefs_mkdir(char* name);
@@ -51,6 +50,7 @@ class server
         int simplefs_read(int fd,int len);
         int simplefs_lseek(int fd,int whence,int len);
         int close(int & fd);
+        void printfFreeDataTable(int adressBloku);
 
         FileSystem* fs;
 
@@ -63,19 +63,18 @@ class server
         int checkMode(int & nrInode,int mode);
 
         int getNodeNumberByFD(int & fd);
+
+        int searchFreeBlock(int size);
+        void deleteBlock(int address,int size);
+
         private:
             FileSystem* attachSegmentOfSharedMemory();
             void detachSegmentOfSharedMemory(FileSystem* shared_memory);
-
             filesName checkName(char* name,int INODE_TYPE,int typeOfOperation);
-
             int checkValueInMap(int *maps,char* value,int TYP_INODE);
             int updateLinksMapAndCreateFile(int & dirNode);
             int updateLinksMapAndDeletePointer(filesName & fileStruct,int TYP_INODE);
-
             int createDescription(int & nrInode,int & mode);
-            //int checkMode(int & nrInode,int & mode);
-            //int getNodeNumberByFD(int & fd);
             int getFilePositionByFD(int & fd);
 
 };

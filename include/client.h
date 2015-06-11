@@ -44,10 +44,8 @@ class client
         void detachSegmentOfSharedMemory(FileSystem* shared_memory);
 
         FileSystem* fs;
-
-        //private:
-            int fileDescription;
-            char clientFifoId[24];
+        int fileDescription;
+        char clientFifoId[24];
 };
 
 #endif // CLIENT_H

@@ -6,7 +6,7 @@ w implementacji systemu plikow
 **/
 
  /**klucz odwolan do pamieci wspoldzielonej*/
-#define MEMORY_KEY     1013
+#define MEMORY_KEY     1019
 
 /**Stale dotyczace systemu plikow --> struktury FileSystem*/
 #define INODE_COUNT 512
@@ -37,7 +37,9 @@ przy wykonaniu operacji lseek*/
 #define EXECUTE 3
 
 /**Stala okreslajaca pusty adres pliku/katalogu*/
-#define EMPTY_ADDRESS 0xFFFFFFFFFFFFFFFF
+//#define EMPTY_ADDRESS 0xFFFFFFFFFFFFFFFF
+#define EMPTY_ADDRESS -1
+#define FILE_SIZE      32 ///staly rozmiar plikow
 
 /**Typy operacji*/
 #define DELETE 1

@@ -4,8 +4,31 @@ void server::showServerState()
 {
 	printFreeBlockBitmap();
 	printFreeInodeBitmap();
-	printDirectories(0, 0);
+	//printDirectories(0, 0);
 	printfFileDescriptors();
+}
+
+void server::printfFreeDataTable(int adress)
+{
+    int block = adress/BLOCK_SIZE;//ktory blok
+    std::cout<<"\Zawartosc bloku,w którym jest zawarty plik"<<std::endl;
+    for(int i = block*BLOCK_SIZE ; i < (block+1)*BLOCK_SIZE - FILE_SIZE; ++i)
+    {
+        if(i % (FILE_SIZE - 1) == 0)
+            std::cout<<std::endl;
+        if(fs->dataBlocks[i] == 0)
+        {
+            std::cout<<"0 ";
+            i+= FILE_SIZE;
+        }
+        else
+        {
+            std::cout<<"1 ";
+            i+= FILE_SIZE;
+        }
+
+    }
+    std::cout<<std::endl;
 }
 
 void server::printFreeBlockBitmap()
@@ -60,7 +83,7 @@ void server::printDirectories(int_l inodeNumber, int depth)
 
 	while(doWhile)
 	{
-		doWhile = false;	
+		doWhile = false;
 		for(int i = 0; i < sizeof(fs->inodes[inodeNumber].pointers)/sizeof(int); i++)
 		{
 			int pointedNumber = fs->inodes[inodeNumber].pointers[i];
@@ -83,7 +106,7 @@ void server::printDirectories(int_l inodeNumber, int depth)
 			}
 		}
 	}
-	
+
 }
 
 void server::printfFileDescriptors()
